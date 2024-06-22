@@ -1,0 +1,21 @@
+[package]
+name = "humanize"
+version = "0.1.0"
+edition = "2021"
+
+[lib]
+crate-type = ["cdylib"]
+
+[dependencies]
+napi-derive = "2"
+
+[dependencies.napi]
+version = "2"
+default-features = false
+features = ["napi9"]
+
+[dependencies.allocator]
+path = "../allocator"
+
+[build-dependencies]
+napi-build = "2"

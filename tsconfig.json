@@ -1,0 +1,30 @@
+{
+  "compilerOptions": {
+    "allowSyntheticDefaultImports": true,
+    "downlevelIteration": true,
+    "importHelpers": false,
+    "module": "CommonJS",
+    "moduleResolution": "node",
+    "noEmitHelpers": true,
+    "noUnusedLocals": true,
+    "noEmit": true,
+    "noUnusedParameters": true,
+    "removeComments": true,
+    "strict": true,
+    "skipLibCheck": true,
+    "forceConsistentCasingInFileNames": true,
+    "target": "ESNext",
+    "inlineSourceMap": true,
+    "esModuleInterop": true,
+    "stripInternal": true,
+    "importsNotUsedAsValues": "remove",
+    "baseUrl": ".",
+    "lib": [
+      "ES2020",
+      "esnext"
+    ]
+  },
+  "exclude": [
+    "node_modules"
+  ]
+}

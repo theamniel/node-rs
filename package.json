@@ -1,0 +1,26 @@
+{
+  "name": "@amniel/node-rs",
+  "private": true,
+  "packageManager": "npm@10.8.1",
+  "workspaces": [
+    "packages/*"
+  ],
+  "scripts": {
+    "artifacts": "npm --workspaces run artifacts",
+    "build": "npm --workspaces run build",
+    "build:target": "npm --workspaces run build -- --target",
+    "build:debug": "npm --workspaces run build:debug",
+    "prepublishOnly": "npm --workspaces run prepublishOnly",
+    "version": "npm run version --workspaces",
+    "test": "ava -s",
+    "test:debug": "cross-env NAPI_DEBUG=1 ava -s"
+  },
+  "devDependencies": {
+    "@napi-rs/cli": "^2.18.3",
+    "@types/node": "^20.14.7",
+    "ava": "^6.1.3",
+    "cross-env": "^7.0.3",
+    "jiti": "^1.21.6",
+    "typescript": "^5.5.2"
+  }
+}
