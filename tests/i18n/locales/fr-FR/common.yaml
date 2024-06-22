@@ -1,0 +1,11 @@
+# It is poorly translated but the intention is understood
+hello: Salut monde!
+
+user:
+  name: "Bonjour, #{name}!"
+  age: "vous avez #{age} ans"
+  greeting: "Bonjour, #{name}! Vous avez #{age} ans et votre anniversaire est le #{birthday}"
+
+fallback:
+  to:
+    fr: Cela se traduit en français
