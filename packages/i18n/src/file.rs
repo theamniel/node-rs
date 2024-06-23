@@ -64,8 +64,3 @@ pub fn parse_content<T: serde::de::DeserializeOwned>(content: &str, ext: &str) -
     _ => Err(Error::new(Status::InvalidArg, "Invalid file extension")),
   }
 }
-
-#[napi_derive::napi]
-pub fn upa(file_path: String) -> Result<String> {
-  Ok(resolve_path(&file_path)?.to_string_lossy().to_string())
-}
