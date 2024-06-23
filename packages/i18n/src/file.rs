@@ -14,7 +14,6 @@ const EXTS: [&str; 4] = ["json", "toml", "yaml", "yml"];
 /// # Errors
 ///
 /// Returns an Error if the file does not exist or is not a file.
-#[inline]
 pub fn resolve_path(file: &str) -> Result<PathBuf> {
   for ext in EXTS {
     if file.ends_with(ext) {

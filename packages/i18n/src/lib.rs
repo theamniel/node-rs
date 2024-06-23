@@ -6,26 +6,25 @@ extern crate allocator;
 mod config;
 mod file;
 
+use self::{
+  config::Config,
+  file::{parse, TObject, Translations},
+};
+use lazy_static::lazy_static;
 use napi::{Error, Result, Status};
 use napi_derive::napi;
-use once_cell::sync::Lazy;
-
 use std::{
   path,
   sync::{Mutex, MutexGuard},
 };
 
-use self::{
-  config::Config,
-  file::{parse, TObject, Translations},
-};
-
-static CACHE: Lazy<Mutex<Translations>> = Lazy::new(|| Mutex::new(Translations::new()));
-static BRACKETS_RE: Lazy<regex::Regex> = Lazy::new(|| regex::Regex::new(r"#\{([\w\.]+)\}").unwrap());
-static LOCALE_RE: Lazy<regex::Regex> = Lazy::new(|| regex::Regex::new(r"[a-z]{2,2}(\-|\_)[A-Z]{2,2}").unwrap());
-static LOCALE_STRICT_RE: Lazy<regex::Regex> =
-  Lazy::new(|| regex::Regex::new(r"^[a-z]{2,2}(\-|\_)[A-Z]{2,2}$").unwrap());
-static FILENAME_RE: Lazy<regex::Regex> = Lazy::new(|| regex::Regex::new(r"^(.*?)\.[^.]+$").unwrap());
+lazy_static! {
+  static ref CACHE: Mutex<Translations> = Mutex::new(Translations::new());
+  static ref BRACKETS_RE: regex::Regex = regex::Regex::new(r"#\{([\w\.]+)\}").unwrap();
+  static ref LOCALE_RE: regex::Regex = regex::Regex::new(r"[a-z]{2,2}(\-|\_)[A-Z]{2,2}").unwrap();
+  static ref LOCALE_STRICT_RE: regex::Regex = regex::Regex::new(r"^[a-z]{2,2}(\-|\_)[A-Z]{2,2}$").unwrap();
+  static ref FILENAME_RE: regex::Regex = regex::Regex::new(r"^(.*?)\.[^.]+$").unwrap();
+}
 
 #[inline]
 fn is_locale(locale: &str) -> bool {
@@ -128,7 +127,7 @@ impl I18n {
               continue;
             };
             if i18n.locales.contains(&locale.to_string()) {
-              _ = i18n.get_with_path(locale, &full_path)?;
+              _ = i18n.get_with_path(locale, &full_path, true)?;
             }
           }
         }
@@ -210,6 +209,78 @@ impl I18n {
     Ok(())
   }
 
+  /// translate function
+  /// @param {string} key
+  /// @param {Record<string, string | number | boolean>} [args]
+  /// @returns {string} translate
+  #[napi(ts_args_type = "key: string, args?: Record<string, string | number | boolean>")]
+  pub fn t(&mut self, key: String, args: Option<TObject>) -> Result<String> {
+    self.translate(self.locale.clone(), key, args)
+  }
+
+  /// translate function
+  /// @param {string} locale
+  /// @param {string} key
+  /// @param {Record<string, string | number | boolean>} [args]  
+  /// @returns {string} translate
+  #[napi(ts_args_type = "locale: string, key: string, args?: Record<string, string | number | boolean>")]
+  pub fn translate(&mut self, locale: String, key: String, args: Option<TObject>) -> Result<String> {
+    if !is_locale(&locale) {
+      return Err(Error::new(Status::InvalidArg, "Invalid locale provided"));
+    }
+
+    // keys - [] invalid
+    // keys is 1 (min: 2) invalid
+    // keys[0] is 0 (min: 1 len) invalid
+    let mut keys = key.split(':').collect::<Vec<_>>();
+    if keys.is_empty() || keys.len() < 2 || keys[0].is_empty() {
+      return Err(Error::new(Status::InvalidArg, "Invalid key provided"));
+    }
+
+    let translations = self.get(&locale, keys[0])?;
+    let mut data: Option<&serde_json::Value>;
+
+    if keys[1].contains('.') {
+      keys = keys[1].split('.').collect::<Vec<_>>();
+      data = translations.get(keys[0]);
+
+      for fragm in keys.iter().skip(1) {
+        if data.is_none() {
+          return Err(Error::new(
+            Status::InvalidArg,
+            format!("Missing value for \"{}\"", keys.join(".")),
+          ));
+        }
+        data = data.unwrap().get(fragm);
+      }
+    } else {
+      data = translations.get(keys[1]);
+    }
+
+    if let Some(data) = data.and_then(|d| d.as_str()) {
+      if args.is_none() || !BRACKETS_RE.is_match(data) {
+        return Ok(data.to_string());
+      }
+
+      let args = args.unwrap();
+      let result = BRACKETS_RE.replace_all(data, |caps: &regex::Captures| {
+        let key = caps.get(1).unwrap().as_str();
+        args
+          .get(key)
+          .map(|a| a.to_string().replace('"', ""))
+          .unwrap_or("??".to_string())
+      });
+      return Ok(result.to_string());
+    } else if locale != self.fallback {
+      return self.translate(self.fallback.clone(), key, args);
+    }
+
+    Err(Error::new(
+      Status::InvalidArg,
+      format!("Missing translation for \"{key}\""),
+    ))
+  }
+
   /// -- Internal methods --
 
   #[inline]
@@ -225,10 +296,10 @@ impl I18n {
   #[inline]
   fn get(&mut self, locale: &str, file: &str) -> Result<TObject> {
     let file_path = format!("{}/{}/{}", self.directory, locale, file);
-    self.get_with_path(locale, &file_path)
+    self.get_with_path(locale, &file_path, false)
   }
 
-  fn get_with_path(&mut self, locale: &str, file_path: &str) -> Result<TObject> {
+  fn get_with_path(&mut self, locale: &str, file_path: &str, is_absolute: bool) -> Result<TObject> {
     let mut cache = self.cache()?;
     if let Some(cache_obj) = cache.get(locale).and_then(|t| t.get(file_path)) {
       return Ok(cache_obj.clone());
@@ -240,7 +311,7 @@ impl I18n {
         format!("Unable to parse filename \"{}\"", file_path),
       ));
     };
-    let name = caps.get(1).unwrap().as_str();
+    let name = caps.get(if is_absolute { 1 } else { 0 }).unwrap().as_str();
 
     let table = parse(file_path)?;
     let _ = cache

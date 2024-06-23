@@ -2,7 +2,6 @@ hello = "Hello, world!"
 
 [user]
 name = 'Hello, #{name}!'
-age = 'U have #{age} years'
 greeting = 'Hello, #{name}! You are #{age} years old and your birthday is on #{birthday}'
 
 [fallback.to]

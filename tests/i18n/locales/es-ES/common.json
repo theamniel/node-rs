@@ -2,7 +2,6 @@
   "hello": "¡Hola, mundo!",
   "user": {
     "name": "¡Hola, #{name}!",
-    "age": "Tienes #{age} años.",
     "greeting": "¡Hola, #{name}! Tienes #{age} años y tu cumpleaños es el #{birthday}."
   },
   "fallback": {

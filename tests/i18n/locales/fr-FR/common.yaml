@@ -3,7 +3,6 @@ hello: Salut monde!
 
 user:
   name: "Bonjour, #{name}!"
-  age: "vous avez #{age} ans"
   greeting: "Bonjour, #{name}! Vous avez #{age} ans et votre anniversaire est le #{birthday}"
 
 fallback:

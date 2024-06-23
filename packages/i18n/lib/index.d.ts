@@ -70,4 +70,48 @@ export class I18n {
    * ```
    */
   constructor(options: I18nConfig)
+  /**
+   * Sets the fallback locale for the current instance.
+   * @param {string} locale
+   * @returns {void}
+   */
+  setFallback(locale: string): void
+  /**
+   * Sets the current locale.
+   * @param {string} locale
+   * @returns {void}
+   */
+  setLocale(locale: string): void
+  /**
+   * Checks if translations are available for the given locale.
+   * Returns true if the locale is present in the translations map, false otherwise.
+   * @param {string} locale
+   * @returns {boolean} has
+   */
+  has(locale: string): boolean
+  /**
+   * Reloads translations for the given locale and key.
+   * If a locale is provided, removes the translations for that locale.
+   * If a key is provided, removes the translation for that key in the given locale.
+   * If no locale is provided, clears all translations.
+   * @param {string} [locale]
+   * @param {string} [key]
+   * @returns {void}
+   */
+  reload(locale?: string | undefined | null, key?: string | undefined | null): void
+  /**
+   * translate function
+   * @param {string} key
+   * @param {Record<string, string | number | boolean>} [args]
+   * @returns {string} translate
+   */
+  t(key: string, args?: Record<string, string | number | boolean>): string
+  /**
+   * translate function
+   * @param {string} locale
+   * @param {string} key
+   * @param {Record<string, string | number | boolean>} [args]
+   * @returns {string} translate
+   */
+  translate(locale: string, key: string, args?: Record<string, string | number | boolean>): string
 }
