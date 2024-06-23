@@ -310,6 +310,7 @@ if (!nativeBinding) {
   throw new Error(`Failed to load native binding`)
 }
 
-const { I18n } = nativeBinding
+const { upa, I18n } = nativeBinding
 
+module.exports.upa = upa
 module.exports.I18n = I18n

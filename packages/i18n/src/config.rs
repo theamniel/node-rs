@@ -1,27 +1,27 @@
 use napi_derive::napi;
 use serde::Deserialize;
 
-/// A configuration interface for Languages
+/// Represents the configuration for internationalization (i18n).
 #[napi(object, js_name = "I18nConfig")]
 #[derive(Deserialize, Debug)]
 pub struct Config {
-  /// directory relative or absolute where locales are located.
-  /// @type {string} path
+  /// The directory where locale files are stored.
+  /// @type {string} directory
   pub directory: String,
 
-  /// A list of available locales.
+  /// A list of supported locales.
   /// @type {string[]} locales
   pub locales: Vec<String>,
 
-  /// fallback language.
-  /// @type {string} fallback
+  /// The fallback locale to use when a translation is not found.
+  /// @type {string} [fallback]
   pub fallback: Option<String>,
 
-  /// default language, defaults to the fallback language if not specified.
+  /// The default locale to use when no locale is specified.
   /// @type {string} [default]
   pub default: Option<String>,
 
-  /// A flag indicating whether to preload locales on initialization.
+  /// Whether to preload all locale files or not.
   /// @type {boolean} [preload]
   pub preload: Option<bool>,
 }

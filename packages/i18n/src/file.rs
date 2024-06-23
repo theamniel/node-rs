@@ -1,21 +1,44 @@
 use napi::{Error, Result, Status};
 use std::{collections::HashMap, fs, path::PathBuf};
 
+/// A type alis for JSON object represented as a HashMap of String to serde_json::Value.
 pub type TObject = HashMap<String, serde_json::Value>;
+
+/// A type alias for a translation object represented as a HashMap of String to TObject.
 pub type Translations = HashMap<String, HashMap<String, TObject>>;
 
+const EXTS: [&str; 4] = ["json", "toml", "yaml", "yml"];
+
+/// Resolves a file path to a PathBuf.
+///
+/// # Errors
+///
+/// Returns an Error if the file does not exist or is not a file.
 #[inline]
 pub fn resolve_path(file: &str) -> Result<PathBuf> {
-  let path = PathBuf::from(file);
-  if !path.exists() || !path.is_file() {
-    return Err(Error::new(
-      Status::InvalidArg,
-      format!("File not found \"{}\"", path.display()),
-    ));
+  for ext in EXTS {
+    if file.ends_with(ext) {
+      let path = PathBuf::from(file);
+      if path.exists() && path.is_file() {
+        return Ok(path);
+      }
+    } else {
+      let file_with_ext = format!("{}.{}", file, ext);
+      let path = PathBuf::from(file_with_ext);
+      if path.exists() && path.is_file() {
+        return Ok(path);
+      }
+    }
   }
-  Ok(path)
+
+  Err(Error::new(Status::InvalidArg, format!("File not found \"{file}\"")))
 }
 
+/// Parses a file at the given path into a TObject.
+///
+/// # Errors
+///
+/// Returns an Error if the file does not exist, is not a file or cannot be parsed.
 #[inline]
 pub fn parse(full_path: &str) -> Result<TObject> {
   let path = resolve_path(full_path)?;
@@ -29,12 +52,21 @@ pub fn parse(full_path: &str) -> Result<TObject> {
   parse_content(&content, path.extension().unwrap().to_string_lossy().as_ref())
 }
 
+/// Parses a string content into a TObject based on the file extension.
+///
+/// # Errors
+/// Returns an Error if the content cannot be parsed of the file extension is invalid.
 #[inline]
-pub fn parse_content(content: &str, ext: &str) -> Result<TObject> {
+pub fn parse_content<T: serde::de::DeserializeOwned>(content: &str, ext: &str) -> Result<T> {
   match ext {
-    "json" => Ok(serde_json::from_str::<TObject>(content)?),
-    "toml" => toml::from_str::<TObject>(content).map_err(|e| Error::new(Status::GenericFailure, e)),
-    "yaml" | "yml" => serde_yml::from_str::<TObject>(content).map_err(|e| Error::new(Status::GenericFailure, e)),
+    "json" => Ok(serde_json::from_str::<T>(content)?),
+    "toml" => toml::from_str::<T>(content).map_err(|e| Error::new(Status::GenericFailure, e)),
+    "yaml" | "yml" => serde_yml::from_str::<T>(content).map_err(|e| Error::new(Status::GenericFailure, e)),
     _ => Err(Error::new(Status::InvalidArg, "Invalid file extension")),
   }
+}
+
+#[napi_derive::napi]
+pub fn upa(file_path: String) -> Result<String> {
+  Ok(resolve_path(&file_path)?.to_string_lossy().to_string())
 }

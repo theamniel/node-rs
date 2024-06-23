@@ -58,6 +58,17 @@ pub struct I18n {
 impl I18n {
   /// Create a new Languages class from the config provide
   /// @param {I18nConfig} options - Options for class I18n
+  ///
+  /// Example:
+  /// ```js
+  /// const i18n = new I18n({
+  ///   directory: './locales',
+  ///   fallback: 'en-US',
+  ///   default: 'fr-FR',
+  ///   locales: ['fr-FR', 'en-US', 'es-ES'],
+  ///   preload: true,
+  /// });
+  /// ```
   #[napi(constructor)]
   pub fn new(options: Config) -> Result<Self> {
     let dir = path::absolute(options.directory).map_err(|e| Error::new(Status::InvalidArg, e))?;
@@ -124,6 +135,79 @@ impl I18n {
       }
     }
     Ok(i18n)
+  }
+
+  /// Sets the fallback locale for the current instance.
+  /// @param {string} locale
+  /// @returns {void}
+  #[napi]
+  pub fn set_fallback(&mut self, locale: String) -> Result<()> {
+    if self.fallback != locale {
+      if is_locale(&locale) {
+        self.fallback = locale
+      } else {
+        return Err(Error::new(
+          Status::InvalidArg,
+          "Invalid locale provided, eg: en-US, es-ES, pr-BR...",
+        ));
+      }
+    }
+
+    Ok(())
+  }
+
+  /// Sets the current locale.
+  /// @param {string} locale
+  /// @returns {void}
+  #[napi]
+  pub fn set_locale(&mut self, locale: String) -> Result<()> {
+    if self.locale != locale {
+      if is_locale(&locale) {
+        self.locale = locale;
+      } else {
+        return Err(Error::new(Status::InvalidArg, "Invalid locale provided"));
+      }
+    }
+
+    Ok(())
+  }
+
+  /// Checks if translations are available for the given locale.
+  /// Returns true if the locale is present in the translations map, false otherwise.
+  /// @param {string} locale
+  /// @returns {boolean} has
+  #[napi]
+  pub fn has(&self, locale: String) -> Result<bool> {
+    let c = self.cache()?;
+    Ok(c.contains_key(&locale))
+  }
+
+  /// Reloads translations for the given locale and key.
+  /// If a locale is provided, removes the translations for that locale.
+  /// If a key is provided, removes the translation for that key in the given locale.
+  /// If no locale is provided, clears all translations.
+  /// @param {string} [locale]
+  /// @param {string} [key]
+  /// @returns {void}
+  #[napi]
+  pub fn reload(&mut self, locale: Option<String>, key: Option<String>) -> Result<()> {
+    let mut cache = self.cache()?;
+    match (locale, key) {
+      (Some(locale), Some(key)) => {
+        let key = format!("{}/{}/{}", self.directory, locale, key);
+        cache.entry(locale).and_modify(|e| {
+          e.remove(&key);
+        });
+      }
+      (Some(locale), None) => {
+        cache.remove(&locale);
+      }
+      (None, _) => {
+        cache.clear();
+      }
+    }
+
+    Ok(())
   }
 
   /// -- Internal methods --

@@ -1,5 +1,5 @@
 /// This is a fork and modify version of [humanize_bytes](https://github.com/trueb2/humanize-bytes)
-/// 
+///
 /// The MIT License (MIT)
 /// Copyright (c) 2022 Jacob Trueb
 ///
@@ -10,6 +10,12 @@ use napi_derive::napi;
 const UNIT: f64 = 1024.0;
 const SUFFIX: [&str; 11] = ["B", "KB", "MB", "GB", "TB", "PB", "EB", "ZB", "YB", "RB", "QB"];
 
+/**
+ * Humanize a byte size into a string.
+ *
+ * @param {number} bytes
+ * @returns {string} a string representation of that size in a human-readable format.
+ */
 #[napi]
 pub fn humanize_bytes(mut bytes: f64) -> String {
   let mut result = String::new();

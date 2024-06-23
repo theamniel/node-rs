@@ -38,12 +38,14 @@ const UNITS: [(f64, f64, &str, &str, &str); 7] = [
 /// Assuming milliseconds shouldn't exceed seconds represented by f64::MAX
 const MAX_MS: f64 = f64::MAX / 1000.0;
 
-/// humanizeDuration function takes `milliseconds`, maximum units and short format as input.
-///
-/// @param {number} ms - input milliseconds
-/// @param {number} [maxUnits=7] - maximum units to display (min: 1, max: 7, default: 7)
-/// @param {boolean} [short=false] - use short format (default: false)
-/// @returns {string} a human-readable duration string
+/**
+ * Humanize a duration in milliseconds to a string.
+ *
+ * @param {number} ms - the duration in milliseconds.
+ * @param {number} [maxUnits=7] - the maximum number of units to display (default is 7).
+ * @param {boolean} [short=false] - Whether to use short abbreviations (default is false)
+ * @returns {string} a human-readable string representation of the duration.
+ */
 #[napi]
 pub fn humanize_duration(ms: f64, max_units: Option<i32>, short: Option<bool>) -> String {
   let is_short = short.unwrap_or(false);
@@ -88,6 +90,15 @@ pub fn humanize_duration(ms: f64, max_units: Option<i32>, short: Option<bool>) -
     .join(" ")
 }
 
+/**
+ * Generate parsers for the given duration.
+ *
+ * # Parameters
+ *
+ * * `ms`: The duration in milliseconds.
+ * * `max_units`: The maximum number of units to display.
+ * * `add`: A closure to add the parsed units to a vector.
+ */
 #[inline]
 fn generate_parsers<F: FnMut((f64, &str, &str, &str))>(ms: f64, max_units: usize, add: F) {
   UNITS
