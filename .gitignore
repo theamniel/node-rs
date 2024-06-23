@@ -195,4 +195,5 @@ Cargo.lock
 !.yarn/sdks
 !.yarn/versions
 *.node
-# lib
+**/lib/bindings.js
+**/lib/index.d.ts
