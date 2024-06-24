@@ -4,6 +4,7 @@
   "main": "lib/index.js",
   "types": "lib/index.d.ts",
   "license": "Apache-2.0",
+  "author": "Amniel",
   "exports": {
     ".": "./lib/index.js",
     "./esm": "./lib/esm.mjs"
@@ -20,6 +21,10 @@
     "build:debug": "napi build --platform --js bindings.js lib",
     "prepublishOnly": "napi prepublish",
     "version": "napi version"
+  },
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/TheAmniel/node-rs.git"
   },
   "napi": {
     "name": "i18n",
