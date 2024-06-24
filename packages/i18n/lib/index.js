@@ -15,6 +15,7 @@ module.exports = {
    * 
    * @param {I18nConfig} options
    * @param {(err: Error) => void} [cb]
+   * @returns {void}
    */
   init(options, cb) {
     if (!i18n) {
@@ -38,6 +39,17 @@ module.exports = {
   /**
    * 
    * @param {string} locale 
+   * @param {string} key 
+   * @param {Record<string, string | number | boolean>} [args] 
+   * @returns {string}
+   */
+  translate(locale, key, args) {
+    if (!i18n) throw new Error('I18n not initialized');
+    return i18n.translate(locale, key, args);
+  },
+  /**
+   * 
+   * @param {string} locale 
    * @returns {void}
    */
   setLocale(locale) {
@@ -52,5 +64,15 @@ module.exports = {
   setFallback(locale) {
     if (!i18n) throw new Error('I18n not initialized');
     i18n.setFallback(locale);
+  },
+  /**
+   * 
+   * @param {string} [locale] 
+   * @param {string} [key]
+   * @returns {void}
+   */
+  reload(locale, key) {
+    if (!i18n) throw new Error('I18n not initialized');
+    i18n.reload(locale, key);
   }
 };
