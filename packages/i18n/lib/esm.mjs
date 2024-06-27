@@ -5,10 +5,14 @@ import _bindings from './bindings.js';
 /**
  * @typedef {import('./index').I18n} I18n
  * @typedef {import('./index').I18nConfig} I18nConfig
+ * 
+ * @callback CallbackError
+ * @param {Error} err
+ * @returns {void}
  */
 
 /**
- * @type {?I18n}
+ * @type {I18n}
  */
 let i18n = null;
 
@@ -16,7 +20,7 @@ export const I18n = _bindings.I18n;
 /**
  * 
  * @param {I18nConfig} options 
- * @param {(err: Error) => void} [cb]
+ * @param {CallbackError} [cb]
  * @returns {void}
  */
 export const init = (options, cb) => {
@@ -25,7 +29,7 @@ export const init = (options, cb) => {
       i18n = new _bindings.I18n(options);
     } catch (err) {
       if (!cb) throw err;
-      cb(err);
+      cb.call(null, err);
     }
   }
 };

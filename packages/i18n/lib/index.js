@@ -1,10 +1,14 @@
 /**
  * @typedef {import('./index').I18n} I18n
  * @typedef {import('./index').I18nConfig} I18nConfig
+ * 
+ * @callback CallbackError
+ * @param {Error} err
+ * @returns {void}
  */
 
 /**
- * @type {?I18n}
+ * @type {I18n}
  */
 let i18n = null;
 
@@ -14,7 +18,7 @@ module.exports = {
   /**
    * 
    * @param {I18nConfig} options
-   * @param {(err: Error) => void} [cb]
+   * @param {CallbackError} [cb]
    * @returns {void}
    */
   init(options, cb) {
@@ -23,7 +27,7 @@ module.exports = {
         i18n = new (require('./bindings')).I18n(options);
       } catch (err) {
         if (!cb) throw err;
-        cb(err);
+        cb.call(null, err);
       }
     }
   },
