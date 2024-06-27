@@ -1,17 +1,15 @@
 extern crate allocator;
 
 use aes::{
-  cipher::{
-    generic_array::{typenum, GenericArray},
-    KeyIvInit, StreamCipher,
-  },
+  cipher::{generic_array, KeyIvInit, StreamCipher},
   Aes256,
 };
 use ctr::Ctr128BE;
 use napi::{bindgen_prelude::Buffer, Error, Result, Status};
 use napi_derive::napi;
 
-type KeyAndIV = (GenericArray<u8, typenum::U32>, GenericArray<u8, typenum::U16>);
+type Key = generic_array::GenericArray<u8, generic_array::typenum::U32>;
+type Nonce = generic_array::GenericArray<u8, generic_array::typenum::U16>;
 
 /**
  * Encrypt a given text using the provided secret key and initialization vector (IV).
@@ -28,7 +26,9 @@ pub fn encrypt(text: String, secret: Buffer, iv: Buffer) -> Result<String> {
   let mut cipher = Ctr128BE::<Aes256>::new(&key, &nonce);
   let mut encrypted = text.into_bytes();
 
-  cipher.apply_keystream(&mut encrypted);
+  cipher
+    .try_apply_keystream(&mut encrypted)
+    .map_err(|e| Error::new(Status::Unknown, e))?;
   Ok(hex::encode(encrypted))
 }
 
@@ -47,7 +47,9 @@ pub fn decrypt(ciphertext: String, secret: Buffer, iv: Buffer) -> Result<String>
   let mut decrypted = hex::decode(ciphertext).map_err(|e| Error::new(Status::GenericFailure, e))?;
   let mut cipher = Ctr128BE::<Aes256>::new(&key, &nonce);
 
-  cipher.apply_keystream(&mut decrypted);
+  cipher
+    .try_apply_keystream(&mut decrypted)
+    .map_err(|e| Error::new(Status::Unknown, e))?;
 
   String::from_utf8(decrypted).map_err(|e| Error::new(Status::GenericFailure, e))
 }
@@ -74,7 +76,7 @@ pub fn cycle(mut num: i32, count: i32, negative: Option<bool>) -> i32 {
 
 /// Extract the key and nonce from the provided secret and IV
 #[inline]
-fn get_key_and_nonce(secret: Buffer, iv: Buffer) -> Result<KeyAndIV> {
+fn get_key_and_nonce(secret: Buffer, iv: Buffer) -> Result<(Key, Nonce)> {
   if secret.len() != 32 {
     return Err(Error::new(
       Status::InvalidArg,
@@ -89,8 +91,8 @@ fn get_key_and_nonce(secret: Buffer, iv: Buffer) -> Result<KeyAndIV> {
     ));
   }
 
-  let key = GenericArray::<u8, typenum::U32>::from_slice(secret.as_ref());
-  let nonce = GenericArray::<u8, typenum::U16>::from_slice(iv.as_ref());
+  let key = Key::from_slice(secret.as_ref());
+  let nonce = Nonce::from_slice(iv.as_ref());
 
   Ok((*key, *nonce))
 }
