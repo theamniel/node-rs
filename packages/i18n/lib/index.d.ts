@@ -9,50 +9,99 @@ export interface I18nConfig {
    * The directory where locale files are stored.
    * @type {string} directory
    */
-  directory: string;
+  directory: string
   /**
    * A list of supported locales.
    * @type {string[]} locales
    */
-  locales: Array<string>;
+  locales: Array<string>
   /**
    * The fallback locale to use when a translation is not found.
    * @type {string} [fallback]
    */
-  fallback?: string;
+  fallback?: string
   /**
    * The default locale to use when no locale is specified.
    * @type {string} [default]
    */
-  default?: string;
+  default?: string
   /**
    * Whether to preload all locale files or not.
    * @type {boolean} [preload]
    */
-  preload?: boolean;
+  preload?: boolean
 }
+/**
+ * @param {I18nConfig} options
+ * @returns {boolean}
+*/
+export function init(options: I18nConfig): boolean
+/**
+ * Sets the fallback locale for the current instance.
+ * @param {string} locale
+ * @returns {undefined}
+ */
+export function setFallback(locale: string): void
+/**
+ * Sets the current locale.
+ * @param {string} locale
+ * @returns {undefined}
+ */
+export function setLocale(locale: string): void
+/**
+ * Checks if translations are available for the given locale.
+ * Returns true if the locale is present in the translations map, false otherwise.
+ * @param {string} locale
+ * @returns {boolean} has
+ */
+export function has(locale: string): boolean
+/**
+ * Reloads translations for the given locale and key.
+ * If a locale is provided, removes the translations for that locale.
+ * If a key is provided, removes the translation for that key in the given locale.
+ * If no locale is provided, clears all translations.
+ * @param {string} [locale]
+ * @param {string} [key]
+ * @returns {undefined}
+ */
+export function reload(locale?: string | undefined | null, key?: string | undefined | null): void
+/**
+ * translate function
+ * @param {string} key
+ * @param {Record<string, string | number | boolean>} [args]
+ * @returns {string} translate
+ */
+export function t(key: string, args?: Record<string, string | number | boolean>): string
+/**
+ * translate function
+ * @param {string} locale
+ * @param {string} key
+ * @param {Record<string, string | number | boolean>} [args]
+ * @returns {string} translate
+ */
+export function translate(locale: string, key: string, args?: Record<string, string | number | boolean>): string
 /** Manages languages and store in cache */
 export class I18n {
   /**
    * @type {string} fallback use if current locale fail
    * @readonly
    */
-  readonly fallback: string;
+  readonly fallback: string
   /**
    * @type {string} locale is the current language
    * @readonly
    */
-  readonly locale: string;
+  readonly locale: string
   /**
    * @type {string} directory relative or absolute where locales are located.
    * @readonly
    */
-  readonly directory: string;
+  readonly directory: string
   /**
    * @type {string[]} locales - A list of available locales, if specified.
    * @readonly
    */
-  readonly locales: Array<string>;
+  readonly locales: Array<string>
   /**
    * Create a new Languages class from the config provide
    * @param {I18nConfig} options - Options for class I18n
@@ -68,26 +117,26 @@ export class I18n {
    * });
    * ```
    */
-  constructor(options: I18nConfig);
+  constructor(options: I18nConfig)
   /**
    * Sets the fallback locale for the current instance.
    * @param {string} locale
-   * @returns {void}
+   * @returns {undefined}
    */
-  setFallback(locale: string): void;
+  setFallback(locale: string): void
   /**
    * Sets the current locale.
    * @param {string} locale
-   * @returns {void}
+   * @returns {undefined}
    */
-  setLocale(locale: string): void;
+  setLocale(locale: string): void
   /**
    * Checks if translations are available for the given locale.
    * Returns true if the locale is present in the translations map, false otherwise.
    * @param {string} locale
    * @returns {boolean} has
    */
-  has(locale: string): boolean;
+  has(locale: string): boolean
   /**
    * Reloads translations for the given locale and key.
    * If a locale is provided, removes the translations for that locale.
@@ -95,16 +144,16 @@ export class I18n {
    * If no locale is provided, clears all translations.
    * @param {string} [locale]
    * @param {string} [key]
-   * @returns {void}
+   * @returns {undefined}
    */
-  reload(locale?: string | undefined | null, key?: string | undefined | null): void;
+  reload(locale?: string | undefined | null, key?: string | undefined | null): void
   /**
    * translate function
    * @param {string} key
    * @param {Record<string, string | number | boolean>} [args]
    * @returns {string} translate
    */
-  t(key: string, args?: Record<string, string | number | boolean>): string;
+  t(key: string, args?: Record<string, string | number | boolean>): string
   /**
    * translate function
    * @param {string} locale
@@ -112,57 +161,5 @@ export class I18n {
    * @param {Record<string, string | number | boolean>} [args]
    * @returns {string} translate
    */
-  translate(locale: string, key: string, args?: Record<string, string | number | boolean>): string;
+  translate(locale: string, key: string, args?: Record<string, string | number | boolean>): string
 }
-export type CallbackError = (err: Error) => void;
-/**
- * 
- * @param {I18nConfig} options
- * @param {CallbackError} [cb]
- * @returns {void}
- */
-export function init(options: I18nConfig, cb: CallbackError): void;
-/**
-  * Sets the fallback locale for the current instance.
-  * @param {string} locale
-  * @returns {void}
-  */
-export function setFallback(locale: string): void;
-/**
- * Sets the current locale.
- * @param {string} locale
- * @returns {void}
- */
-export function setLocale(locale: string): void;
-/**
- * Checks if translations are available for the given locale.
- * Returns true if the locale is present in the translations map, false otherwise.
- * @param {string} locale
- * @returns {boolean} has
- */
-export function has(locale: string): boolean;
-/**
- * Reloads translations for the given locale and key.
- * If a locale is provided, removes the translations for that locale.
- * If a key is provided, removes the translation for that key in the given locale.
- * If no locale is provided, clears all translations.
- * @param {string} [locale]
- * @param {string} [key]
- * @returns {void}
- */
-export function reload(locale?: string | undefined | null, key?: string | undefined | null): void;
-/**
- * translate function
- * @param {string} key
- * @param {Record<string, string | number | boolean>} [args]
- * @returns {string} translate
- */
-export function t(key: string, args?: Record<string, string | number | boolean>): string;
-/**
- * translate function
- * @param {string} locale
- * @param {string} key
- * @param {Record<string, string | number | boolean>} [args]
- * @returns {string} translate
- */
-export function translate(locale: string, key: string, args?: Record<string, string | number | boolean>): string;
