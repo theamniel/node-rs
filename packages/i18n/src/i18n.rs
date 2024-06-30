@@ -90,39 +90,23 @@ impl I18n {
       return Err(Error::new(Status::InvalidArg, "Array of locales is empty"));
     }
 
-    for locale in options.locales.clone() {
-      if !is_locale(&locale) {
+    // yep, don't use <Iter>.any
+    for locale in &options.locales {
+      if !is_locale(locale) {
         return Err(Error::new(Status::InvalidArg, format!("Invalid locale \"{}\"", locale)));
       }
     }
 
-    let mut i18n = I18n {
+    let i18n = I18n {
       directory: dir.to_string_lossy().replace('\\', "/"),
-      locales: options.locales.clone(),
       locale: options.default.unwrap_or(options.locales[0].clone()),
       fallback: options.fallback.unwrap_or(options.locales[0].clone()),
+      locales: options.locales,
     };
 
     if let Some(preload) = options.preload {
       if preload && i18n.cache()?.is_empty() {
-        let pattern_path = format!("{}/**/**/*.*", i18n.directory);
-        for path in glob::glob(&pattern_path).unwrap().filter_map(std::result::Result::ok) {
-          if path.is_file() {
-            let full_path = path.to_string_lossy().replace('\\', "/");
-
-            let Some(locale) = LOCALE_RE
-              .captures(&full_path)
-              .and_then(|c| c.get(0))
-              .map(|s| s.as_str())
-            else {
-              // debug
-              continue;
-            };
-            if i18n.locales.contains(&locale.to_string()) {
-              _ = i18n.get_with_path(locale, &full_path, true)?;
-            }
-          }
-        }
+        i18n.load(None)?;
       }
     }
 
@@ -182,12 +166,12 @@ impl I18n {
   /// @param {string} [key]
   /// @returns {undefined}
   #[napi]
-  pub fn reload(&mut self, locale: Option<String>, key: Option<String>) -> Result<()> {
+  pub fn reload(&self, locale: Option<String>, key: Option<String>) -> Result<()> {
     let mut cache = self.cache()?;
-    match (locale, key) {
+    match (locale.clone(), key) {
       (Some(locale), Some(key)) => {
         let key = format!("{}/{}/{}", self.directory, locale, key);
-        cache.entry(locale).and_modify(|e| {
+        cache.entry(locale.clone()).and_modify(|e| {
           e.remove(&key);
         });
       }
@@ -199,6 +183,13 @@ impl I18n {
       }
     }
 
+    drop(cache);
+    if let Some(ref locale_str) = locale {
+      self.load(Some(locale_str))?;
+    } else {
+      self.load(None)?; // Call load with None for full reload
+    }
+
     Ok(())
   }
 
@@ -207,7 +198,7 @@ impl I18n {
   /// @param {Record<string, string | number | boolean>} [args]
   /// @returns {string} translate
   #[napi(ts_args_type = "key: string, args?: Record<string, string | number | boolean>")]
-  pub fn t(&mut self, key: String, args: Option<TObject>) -> Result<String> {
+  pub fn t(&self, key: String, args: Option<TObject>) -> Result<String> {
     self.translate(self.locale.clone(), key, args)
   }
 
@@ -217,7 +208,7 @@ impl I18n {
   /// @param {Record<string, string | number | boolean>} [args]  
   /// @returns {string} translate
   #[napi(ts_args_type = "locale: string, key: string, args?: Record<string, string | number | boolean>")]
-  pub fn translate(&mut self, locale: String, key: String, args: Option<TObject>) -> Result<String> {
+  pub fn translate(&self, locale: String, key: String, args: Option<TObject>) -> Result<String> {
     if !is_locale(&locale) {
       return Err(Error::new(Status::InvalidArg, "Invalid locale provided"));
     }
@@ -287,17 +278,20 @@ impl I18n {
   }
 
   #[inline]
-  fn get(&mut self, locale: &str, file: &str) -> Result<TObject> {
+  fn get(&self, locale: &str, file: &str) -> Result<TObject> {
     let file_path = format!("{}/{}/{}", self.directory, locale, file);
-    self.get_with_path(locale, &file_path, false)
-  }
-
-  fn get_with_path(&mut self, locale: &str, file_path: &str, is_absolute: bool) -> Result<TObject> {
-    let mut cache = self.cache()?;
-    if let Some(cache_obj) = cache.get(locale).and_then(|t| t.get(file_path)) {
+    let cache = self.cache()?;
+    if let Some(cache_obj) = cache.get(locale).and_then(|t| t.get(&file_path)) {
       return Ok(cache_obj.clone());
     }
 
+    Err(Error::new(
+      Status::InvalidArg,
+      format!("Translation not found for \"{locale}/{file}\""),
+    ))
+  }
+
+  fn load_file(&self, locale: &str, file_path: &str, is_absolute: bool) -> Result<()> {
     let Some(caps) = FILENAME_RE.captures(file_path) else {
       return Err(Error::new(
         Status::Unknown,
@@ -305,13 +299,44 @@ impl I18n {
       ));
     };
     let name = caps.get(if is_absolute { 1 } else { 0 }).unwrap().as_str();
+    let mut cache = self.cache()?;
 
     let table = parse(file_path)?;
-    let _ = cache
+    cache
       .entry(locale.to_string())
       .or_default()
-      .insert(name.to_string(), table.clone());
+      .insert(name.to_string(), table);
 
-    Ok(table)
+    Ok(())
+  }
+
+  fn load(&self, load_locale: Option<&str>) -> Result<()> {
+    let pattern_path = format!("{}/**/**/*.*", self.directory);
+    for path in glob::glob(&pattern_path).unwrap().filter_map(std::result::Result::ok) {
+      if path.is_file() {
+        let full_path = path.to_string_lossy().replace('\\', "/");
+
+        let Some(locale) = LOCALE_RE
+          .captures(&full_path)
+          .and_then(|c| c.get(0))
+          .map(|s| s.as_str())
+        else {
+          // debug
+          continue;
+        };
+
+        if let Some(load_locale) = load_locale {
+          if locale == load_locale {
+            self.load_file(locale, &full_path, true)?;
+            continue;
+          }
+        }
+
+        if self.locales.contains(&locale.to_string()) {
+          self.load_file(locale, &full_path, true)?;
+        }
+      }
+    }
+    Ok(())
   }
 }

@@ -9,10 +9,10 @@ mod i18n;
 
 use napi::{Error, Result, Status};
 use napi_derive::napi;
-use std::sync::{Mutex, OnceLock};
+use std::sync::{OnceLock, RwLock};
 
 // Global methods
-static I18N: OnceLock<Mutex<i18n::I18n>> = OnceLock::new();
+static I18N: OnceLock<RwLock<i18n::I18n>> = OnceLock::new();
 
 /**
  * @param {I18nConfig} options
@@ -21,8 +21,8 @@ static I18N: OnceLock<Mutex<i18n::I18n>> = OnceLock::new();
 #[napi]
 pub fn init(options: config::Config) -> Result<bool> {
   if I18N.get().is_none() {
-    let t = i18n::I18n::new(options)?;
-    _ = I18N.set(Mutex::new(t));
+    let i18n_instance = i18n::I18n::new(options)?;
+    _ = I18N.set(RwLock::new(i18n_instance));
     return Ok(true);
   }
   Ok(false)
@@ -34,7 +34,7 @@ pub fn init(options: config::Config) -> Result<bool> {
 #[napi]
 pub fn set_fallback(locale: String) -> Result<()> {
   if let Some(i18n) = I18N.get() {
-    return i18n.lock().unwrap().set_fallback(locale);
+    return i18n.write().unwrap().set_fallback(locale);
   }
 
   Err(Error::new(Status::GenericFailure, "Not yet initialized  ..."))
@@ -46,7 +46,7 @@ pub fn set_fallback(locale: String) -> Result<()> {
 #[napi]
 pub fn set_locale(locale: String) -> Result<()> {
   if let Some(i18n) = I18N.get() {
-    return i18n.lock().unwrap().set_locale(locale);
+    return i18n.write().unwrap().set_locale(locale);
   }
   Err(Error::new(Status::GenericFailure, "Not yet initialized  ..."))
 }
@@ -58,7 +58,7 @@ pub fn set_locale(locale: String) -> Result<()> {
 #[napi]
 pub fn has(locale: String) -> Result<bool> {
   if let Some(i18n) = I18N.get() {
-    return i18n.lock().unwrap().has(locale);
+    return i18n.read().unwrap().has(locale);
   }
   Err(Error::new(Status::GenericFailure, "Not yet initialized  ..."))
 }
@@ -73,7 +73,7 @@ pub fn has(locale: String) -> Result<bool> {
 #[napi]
 pub fn reload(locale: Option<String>, key: Option<String>) -> Result<()> {
   if let Some(i18n) = I18N.get() {
-    return i18n.lock().unwrap().reload(locale, key);
+    return i18n.read().unwrap().reload(locale, key);
   }
   Err(Error::new(Status::GenericFailure, "Not yet initialized  ..."))
 }
@@ -85,7 +85,7 @@ pub fn reload(locale: Option<String>, key: Option<String>) -> Result<()> {
 #[napi(ts_args_type = "key: string, args?: Record<string, string | number | boolean>")]
 pub fn t(key: String, args: Option<file::TObject>) -> Result<String> {
   if let Some(i18n) = I18N.get() {
-    return i18n.lock().unwrap().t(key, args);
+    return i18n.read().unwrap().t(key, args);
   }
   Err(Error::new(Status::GenericFailure, "Not yet initialized  ..."))
 }
@@ -98,7 +98,7 @@ pub fn t(key: String, args: Option<file::TObject>) -> Result<String> {
 #[napi(ts_args_type = "locale: string, key: string, args?: Record<string, string | number | boolean>")]
 pub fn translate(locale: String, key: String, args: Option<file::TObject>) -> Result<String> {
   if let Some(i18n) = I18N.get() {
-    return i18n.lock().unwrap().translate(locale, key, args);
+    return i18n.read().unwrap().translate(locale, key, args);
   }
   Err(Error::new(Status::GenericFailure, "Not yet initialized  ..."))
 }
