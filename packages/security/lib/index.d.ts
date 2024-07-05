@@ -11,7 +11,7 @@
  * @param {Buffer} iv
  * @returns {string} Data encrypted in hash
 */
-export function encrypt(text: string, secret: Buffer, iv: Buffer): string
+export declare function encrypt(text: string, secret: Buffer, iv: Buffer): string
 /**
  * Decrypt a given ciphertext using the provided secret key and initialization vector (IV).
  *
@@ -20,7 +20,7 @@ export function encrypt(text: string, secret: Buffer, iv: Buffer): string
  * @param {Buffer} iv
  * @returns {string} Data decrypted into a String
 */
-export function decrypt(ciphertext: string, secret: Buffer, iv: Buffer): string
+export declare function decrypt(ciphertext: string, secret: Buffer, iv: Buffer): string
 /**
  * Cycle a given Number within a specified range, optionally in reverse.
  *
@@ -29,4 +29,4 @@ export function decrypt(ciphertext: string, secret: Buffer, iv: Buffer): string
  * @param {boolean} [negative=false]
  * @returns {number} reverse Number
 */
-export function cycle(num: number, count: number, negative?: boolean | undefined | null): number
+export declare function cycle(num: number, count: number, negative?: boolean | undefined | null): number
