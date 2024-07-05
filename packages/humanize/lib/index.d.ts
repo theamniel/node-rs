@@ -9,7 +9,7 @@
  * @param {number} bytes
  * @returns {string} a string representation of that size in a human-readable format.
 */
-export declare function humanizeBytes(bytes: number): string
+export declare function bytes(bytes: number): string
 /**
  * Humanize a duration in milliseconds to a string.
  *
@@ -18,4 +18,4 @@ export declare function humanizeBytes(bytes: number): string
  * @param {boolean} [short=false] - Whether to use short abbreviations (default is false)
  * @returns {string} a human-readable string representation of the duration.
 */
-export declare function humanizeDuration(ms: number, maxUnits?: number | undefined | null, short?: boolean | undefined | null): string
+export declare function duration(ms: number, maxUnits?: number | undefined | null, short?: boolean | undefined | null): string

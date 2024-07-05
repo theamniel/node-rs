@@ -47,7 +47,7 @@ const MAX_MS: f64 = f64::MAX / 1000.0;
  * @returns {string} a human-readable string representation of the duration.
  */
 #[napi]
-pub fn humanize_duration(ms: f64, max_units: Option<i32>, short: Option<bool>) -> String {
+pub fn duration(ms: f64, max_units: Option<i32>, short: Option<bool>) -> String {
   if !(1.0..=MAX_MS).contains(&ms) {
     return "0".to_string();
   }

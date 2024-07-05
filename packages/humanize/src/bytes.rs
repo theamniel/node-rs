@@ -17,7 +17,7 @@ const SUFFIX: [&str; 11] = ["B", "KB", "MB", "GB", "TB", "PB", "EB", "ZB", "YB",
  * @returns {string} a string representation of that size in a human-readable format.
  */
 #[napi]
-pub fn humanize_bytes(mut bytes: f64) -> String {
+pub fn bytes(mut bytes: f64) -> String {
   let mut result = String::new();
   if bytes < 0.0 {
     result.push('-');
