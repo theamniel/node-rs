@@ -98,7 +98,7 @@ fn generate_parsers<F: FnMut((f64, &str, &str, &str))>(ms: &f64, max_units: usiz
   UNITS
     .into_iter()
     .filter_map(|(d, m, s, p, a)| {
-      let value = if m == 0.0 { round(ms / d) } else { round(ms / d) % m };
+      let value = if m == M_YEAR { round(ms / d) } else { round(ms / d) % m };
       if value > 0.0 {
         Some((value, s, p, a))
       } else {

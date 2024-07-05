@@ -1,3 +1,4 @@
+use lazy_static::lazy_static;
 use napi::{Error, Result, Status};
 use std::{collections::HashMap, fs, path::PathBuf};
 
@@ -7,6 +8,10 @@ pub type TObject = HashMap<String, serde_json::Value>;
 /// A type alias for a translation object represented as a HashMap of String to TObject.
 pub type Translations = HashMap<String, HashMap<String, TObject>>;
 
+lazy_static! {
+  static ref EXTENSION_RE: regex::Regex = regex::Regex::new(r"\.(json|toml|ya?ml)$").unwrap();
+}
+/// A type alias for a translation file.
 const EXTS: [&str; 4] = ["json", "toml", "yaml", "yml"];
 
 /// Resolves a file path to a PathBuf.
@@ -15,15 +20,14 @@ const EXTS: [&str; 4] = ["json", "toml", "yaml", "yml"];
 ///
 /// Returns an Error if the file does not exist or is not a file.
 pub fn resolve_path(file: &str) -> Result<PathBuf> {
-  for ext in EXTS {
-    if file.ends_with(ext) {
-      let path = PathBuf::from(file);
-      if path.exists() && path.is_file() {
-        return Ok(path);
-      }
-    } else {
-      let file_with_ext = format!("{}.{}", file, ext);
-      let path = PathBuf::from(file_with_ext);
+  if EXTENSION_RE.is_match(file) {
+    let path = PathBuf::from(file);
+    if path.exists() && path.is_file() {
+      return Ok(path);
+    }
+  } else {
+    for ext in EXTS {
+      let path = PathBuf::from(format!("{}.{}", file, ext));
       if path.exists() && path.is_file() {
         return Ok(path);
       }
