@@ -173,8 +173,12 @@ impl I18n {
         let key = format!("{}/{}/{}", self.directory, locale, key);
         cache.remove(&key);
       }
-      (Some(_), None) => {
-        // TODO
+      (Some(locale), None) => {
+        for item in cache.clone().into_iter() {
+          if item.0.contains(&locale) {
+            cache.remove(&item.0);
+          }
+        }
       }
       (None, _) => {
         cache.clear();
