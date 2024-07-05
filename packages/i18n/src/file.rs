@@ -1,12 +1,13 @@
+use dashmap::DashMap;
 use lazy_static::lazy_static;
 use napi::{Error, Result, Status};
 use std::{collections::HashMap, fs, path::PathBuf};
 
-/// A type alis for JSON object represented as a HashMap of String to serde_json::Value.
-pub type TObject = HashMap<String, serde_json::Value>;
+/// A type alias for JSON object represented as a HashMap of String to serde_json::Value.
+pub type JsonObject = HashMap<String, serde_json::Value>;
 
 /// A type alias for a translation object represented as a HashMap of String to TObject.
-pub type Translations = HashMap<String, TObject>;
+pub type Cache = DashMap<String, JsonObject>;
 
 lazy_static! {
   static ref EXTENSION_RE: regex::Regex = regex::Regex::new(r"\.(json|toml|ya?ml)$").unwrap();
@@ -43,7 +44,7 @@ pub fn resolve_path(file: &str) -> Result<PathBuf> {
 ///
 /// Returns an Error if the file does not exist, is not a file or cannot be parsed.
 #[inline]
-pub fn parse(full_path: &str) -> Result<TObject> {
+pub fn parse(full_path: &str) -> Result<JsonObject> {
   let path = resolve_path(full_path)?;
   let content = fs::read_to_string(&path).map_err(|_| {
     Error::new(

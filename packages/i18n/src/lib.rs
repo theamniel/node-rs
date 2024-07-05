@@ -83,7 +83,7 @@ pub fn reload(locale: Option<String>, key: Option<String>) -> Result<()> {
 /// @param {Record<string, string | number | boolean>} [args]
 /// @returns {string} translate
 #[napi(ts_args_type = "key: string, args?: Record<string, string | number | boolean>")]
-pub fn t(key: String, args: Option<file::TObject>) -> Result<String> {
+pub fn t(key: String, args: Option<file::JsonObject>) -> Result<String> {
   if let Some(i18n) = I18N.get() {
     return i18n.read().unwrap().t(key, args);
   }
@@ -96,7 +96,7 @@ pub fn t(key: String, args: Option<file::TObject>) -> Result<String> {
 /// @param {Record<string, string | number | boolean>} [args]  
 /// @returns {string} translate
 #[napi(ts_args_type = "locale: string, key: string, args?: Record<string, string | number | boolean>")]
-pub fn translate(locale: String, key: String, args: Option<file::TObject>) -> Result<String> {
+pub fn translate(locale: String, key: String, args: Option<file::JsonObject>) -> Result<String> {
   if let Some(i18n) = I18N.get() {
     return i18n.read().unwrap().translate(locale, key, args);
   }

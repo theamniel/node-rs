@@ -1,17 +1,14 @@
 use super::{
   config::Config,
-  file::{parse, TObject, Translations},
+  file::{parse, Cache, JsonObject},
 };
 use lazy_static::lazy_static;
 use napi::{Error, Result, Status};
 use napi_derive::napi;
-use std::{
-  path,
-  sync::{Mutex, MutexGuard},
-};
+use std::path;
 
 lazy_static! {
-  static ref CACHE: Mutex<Translations> = Mutex::new(Translations::new());
+  static ref CACHE: Cache = Cache::new();
   static ref BRACKETS_RE: regex::Regex = regex::Regex::new(r"#\{([\w\.]+)\}").unwrap();
   static ref LOCALE_RE: regex::Regex = regex::Regex::new(r"[a-z]{2,2}(\-|\_)[A-Z]{2,2}").unwrap();
   static ref LOCALE_STRICT_RE: regex::Regex = regex::Regex::new(r"^[a-z]{2,2}(\-|\_)[A-Z]{2,2}$").unwrap();
@@ -105,7 +102,7 @@ impl I18n {
     };
 
     if let Some(preload) = options.preload {
-      if preload && i18n.cache()?.is_empty() {
+      if preload && CACHE.is_empty() {
         i18n.load(None)?;
       }
     }
@@ -154,8 +151,7 @@ impl I18n {
   /// @returns {boolean} has
   #[napi]
   pub fn has(&self, locale: String) -> Result<bool> {
-    let c = self.cache()?;
-    Ok(c.contains_key(&locale))
+    Ok(CACHE.contains_key(&locale))
   }
 
   /// Reloads translations for the given locale and key.
@@ -167,31 +163,25 @@ impl I18n {
   /// @returns {undefined}
   #[napi]
   pub fn reload(&self, locale: Option<String>, key: Option<String>) -> Result<()> {
-    let mut cache = self.cache()?;
     match (locale.clone(), key) {
       (Some(locale), Some(key)) => {
         let key = format!("{}/{}/{}", self.directory, locale, key);
-        cache.remove(&key);
+        CACHE.remove(&key);
+        self.load(Some(&locale))?;
       }
       (Some(locale), None) => {
-        for item in cache.clone().into_iter() {
+        for item in CACHE.clone().into_iter() {
           if item.0.contains(&locale) {
-            cache.remove(&item.0);
+            CACHE.remove(&item.0);
           }
         }
+        self.load(Some(&locale))?; // Reloads the locale
       }
       (None, _) => {
-        cache.clear();
+        CACHE.clear();
+        self.load(None)?;
       }
     }
-
-    drop(cache);
-    if let Some(ref locale_str) = locale {
-      self.load(Some(locale_str))?;
-    } else {
-      self.load(None)?; // Call load with None for full reload
-    }
-
     Ok(())
   }
 
@@ -200,7 +190,7 @@ impl I18n {
   /// @param {Record<string, string | number | boolean>} [args]
   /// @returns {string} translate
   #[napi(ts_args_type = "key: string, args?: Record<string, string | number | boolean>")]
-  pub fn t(&self, key: String, args: Option<TObject>) -> Result<String> {
+  pub fn t(&self, key: String, args: Option<JsonObject>) -> Result<String> {
     self.translate(self.locale.clone(), key, args)
   }
 
@@ -210,7 +200,7 @@ impl I18n {
   /// @param {Record<string, string | number | boolean>} [args]  
   /// @returns {string} translate
   #[napi(ts_args_type = "locale: string, key: string, args?: Record<string, string | number | boolean>")]
-  pub fn translate(&self, locale: String, key: String, args: Option<TObject>) -> Result<String> {
+  pub fn translate(&self, locale: String, key: String, args: Option<JsonObject>) -> Result<String> {
     if !is_locale(&locale) {
       return Err(Error::new(Status::InvalidArg, "Invalid locale provided"));
     }
@@ -270,20 +260,9 @@ impl I18n {
   /// -- Internal methods --
 
   #[inline]
-  fn cache(&self) -> Result<MutexGuard<Translations>> {
-    CACHE.lock().map_err(|err| {
-      Error::new(
-        Status::Unknown,
-        format!("Unable to access to global cache: \"{}\"", err),
-      )
-    })
-  }
-
-  #[inline]
-  fn get(&self, locale: &str, file: &str) -> Result<TObject> {
+  fn get(&self, locale: &str, file: &str) -> Result<JsonObject> {
     let file_path = format!("{}/{}/{}", self.directory, locale, file);
-    let cache = self.cache()?;
-    if let Some(cache_obj) = cache.get(&file_path) {
+    if let Some(cache_obj) = CACHE.get(&file_path) {
       return Ok(cache_obj.clone());
     }
 
@@ -301,10 +280,8 @@ impl I18n {
       ));
     };
     let name = caps.get(if is_absolute { 1 } else { 0 }).unwrap().as_str();
-    let mut cache = self.cache()?;
-
     let table = parse(file_path)?;
-    cache.entry(name.to_string()).or_insert(table);
+    CACHE.entry(name.to_string()).or_insert(table);
 
     Ok(())
   }
