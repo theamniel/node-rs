@@ -1,13 +1,12 @@
 use super::{
-  config::Config,
+  config,
   file::{parse, Cache, JsonObject},
 };
-use lazy_static::lazy_static;
 use napi::{Error, Result, Status};
 use napi_derive::napi;
 use std::path;
 
-lazy_static! {
+lazy_static::lazy_static! {
   static ref CACHE: Cache = Cache::new();
   static ref BRACKETS_RE: regex::Regex = regex::Regex::new(r"#\{([\w\.]+)\}").unwrap();
   static ref LOCALE_RE: regex::Regex = regex::Regex::new(r"[a-z]{2,2}(\-|\_)[A-Z]{2,2}").unwrap();
@@ -58,7 +57,7 @@ impl I18n {
   /// });
   /// ```
   #[napi(constructor)]
-  pub fn new(options: Config) -> Result<Self> {
+  pub fn new(options: config::Config) -> Result<Self> {
     let dir = path::absolute(options.directory).map_err(|e| Error::new(Status::InvalidArg, e))?;
 
     if !dir.exists() || !dir.is_dir() {
@@ -213,9 +212,15 @@ impl I18n {
       return Err(Error::new(Status::InvalidArg, "Invalid key provided"));
     }
 
-    let translations = self.get(&locale, keys[0])?;
-    let mut data: Option<&serde_json::Value>;
+    let file_path = format!("{}/{}/{}", &self.directory, &locale, keys[0]);
+    let Some(translations) = CACHE.get(&file_path) else {
+      return Err(Error::new(
+        Status::InvalidArg,
+        format!("Translation not found for \"{}/{}\"", &locale, keys[0]),
+      ));
+    };
 
+    let mut data: Option<&serde_json::Value>;
     if keys[1].contains('.') {
       keys = keys[1].split('.').collect::<Vec<_>>();
       data = translations.get(keys[0]);
@@ -258,19 +263,6 @@ impl I18n {
   }
 
   /// -- Internal methods --
-
-  #[inline]
-  fn get(&self, locale: &str, file: &str) -> Result<JsonObject> {
-    let file_path = format!("{}/{}/{}", self.directory, locale, file);
-    if let Some(cache_obj) = CACHE.get(&file_path) {
-      return Ok(cache_obj.clone());
-    }
-
-    Err(Error::new(
-      Status::InvalidArg,
-      format!("Translation not found for \"{locale}/{file}\""),
-    ))
-  }
 
   fn load_file(&self, file_path: &str, is_absolute: bool) -> Result<()> {
     let Some(caps) = FILENAME_RE.captures(file_path) else {

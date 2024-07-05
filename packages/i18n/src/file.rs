@@ -6,7 +6,7 @@ use std::{collections::HashMap, fs, path::PathBuf};
 /// A type alias for JSON object represented as a HashMap of String to serde_json::Value.
 pub type JsonObject = HashMap<String, serde_json::Value>;
 
-/// A type alias for a translation object represented as a HashMap of String to TObject.
+/// A type alias for a translation object represented as a DashMap of String to JsonObject.
 pub type Cache = DashMap<String, JsonObject>;
 
 lazy_static! {
