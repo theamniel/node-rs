@@ -6,7 +6,7 @@ use std::{collections::HashMap, fs, path::PathBuf};
 pub type TObject = HashMap<String, serde_json::Value>;
 
 /// A type alias for a translation object represented as a HashMap of String to TObject.
-pub type Translations = HashMap<String, HashMap<String, TObject>>;
+pub type Translations = HashMap<String, TObject>;
 
 lazy_static! {
   static ref EXTENSION_RE: regex::Regex = regex::Regex::new(r"\.(json|toml|ya?ml)$").unwrap();

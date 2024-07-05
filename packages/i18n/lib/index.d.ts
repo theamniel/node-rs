@@ -35,26 +35,26 @@ export interface I18nConfig {
  * @param {I18nConfig} options
  * @returns {boolean}
 */
-export function init(options: I18nConfig): boolean
+export declare function init(options: I18nConfig): boolean
 /**
  * Sets the fallback locale for the current instance.
  * @param {string} locale
  * @returns {undefined}
  */
-export function setFallback(locale: string): void
+export declare function setFallback(locale: string): void
 /**
  * Sets the current locale.
  * @param {string} locale
  * @returns {undefined}
  */
-export function setLocale(locale: string): void
+export declare function setLocale(locale: string): void
 /**
  * Checks if translations are available for the given locale.
  * Returns true if the locale is present in the translations map, false otherwise.
  * @param {string} locale
  * @returns {boolean} has
  */
-export function has(locale: string): boolean
+export declare function has(locale: string): boolean
 /**
  * Reloads translations for the given locale and key.
  * If a locale is provided, removes the translations for that locale.
@@ -64,14 +64,14 @@ export function has(locale: string): boolean
  * @param {string} [key]
  * @returns {undefined}
  */
-export function reload(locale?: string | undefined | null, key?: string | undefined | null): void
+export declare function reload(locale?: string | undefined | null, key?: string | undefined | null): void
 /**
  * translate function
  * @param {string} key
  * @param {Record<string, string | number | boolean>} [args]
  * @returns {string} translate
  */
-export function t(key: string, args?: Record<string, string | number | boolean>): string
+export declare function t(key: string, args?: Record<string, string | number | boolean>): string
 /**
  * translate function
  * @param {string} locale
@@ -79,7 +79,7 @@ export function t(key: string, args?: Record<string, string | number | boolean>)
  * @param {Record<string, string | number | boolean>} [args]
  * @returns {string} translate
  */
-export function translate(locale: string, key: string, args?: Record<string, string | number | boolean>): string
+export declare function translate(locale: string, key: string, args?: Record<string, string | number | boolean>): string
 /** Manages languages and store in cache */
 export class I18n {
   /**

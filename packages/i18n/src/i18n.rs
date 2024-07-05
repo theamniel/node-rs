@@ -171,12 +171,10 @@ impl I18n {
     match (locale.clone(), key) {
       (Some(locale), Some(key)) => {
         let key = format!("{}/{}/{}", self.directory, locale, key);
-        cache.entry(locale.clone()).and_modify(|e| {
-          e.remove(&key);
-        });
+        cache.remove(&key);
       }
-      (Some(locale), None) => {
-        cache.remove(&locale);
+      (Some(_), None) => {
+        // TODO
       }
       (None, _) => {
         cache.clear();
@@ -281,7 +279,7 @@ impl I18n {
   fn get(&self, locale: &str, file: &str) -> Result<TObject> {
     let file_path = format!("{}/{}/{}", self.directory, locale, file);
     let cache = self.cache()?;
-    if let Some(cache_obj) = cache.get(locale).and_then(|t| t.get(&file_path)) {
+    if let Some(cache_obj) = cache.get(&file_path) {
       return Ok(cache_obj.clone());
     }
 
@@ -291,7 +289,7 @@ impl I18n {
     ))
   }
 
-  fn load_file(&self, locale: &str, file_path: &str, is_absolute: bool) -> Result<()> {
+  fn load_file(&self, file_path: &str, is_absolute: bool) -> Result<()> {
     let Some(caps) = FILENAME_RE.captures(file_path) else {
       return Err(Error::new(
         Status::Unknown,
@@ -302,10 +300,7 @@ impl I18n {
     let mut cache = self.cache()?;
 
     let table = parse(file_path)?;
-    cache
-      .entry(locale.to_string())
-      .or_default()
-      .insert(name.to_string(), table);
+    cache.entry(name.to_string()).or_insert(table);
 
     Ok(())
   }
@@ -327,13 +322,13 @@ impl I18n {
 
         if let Some(load_locale) = load_locale {
           if locale == load_locale {
-            self.load_file(locale, &full_path, true)?;
+            self.load_file(&full_path, true)?;
             continue;
           }
         }
 
         if self.locales.contains(&locale.to_string()) {
-          self.load_file(locale, &full_path, true)?;
+          self.load_file(&full_path, true)?;
         }
       }
     }
