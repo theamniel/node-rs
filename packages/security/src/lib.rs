@@ -21,7 +21,7 @@ type Nonce = generic_array::GenericArray<u8, generic_array::typenum::U16>;
  */
 #[napi]
 pub fn encrypt(text: String, secret: Buffer, iv: Buffer) -> Result<String> {
-  let (key, nonce) = get_key_and_nonce(secret, iv)?;
+  let (key, nonce) = get_key_and_nonce(&secret, &iv)?;
 
   let mut cipher = Ctr128BE::<Aes256>::new(&key, &nonce);
   let mut encrypted = text.into_bytes();
@@ -42,7 +42,7 @@ pub fn encrypt(text: String, secret: Buffer, iv: Buffer) -> Result<String> {
  */
 #[napi]
 pub fn decrypt(ciphertext: String, secret: Buffer, iv: Buffer) -> Result<String> {
-  let (key, nonce) = get_key_and_nonce(secret, iv)?;
+  let (key, nonce) = get_key_and_nonce(&secret, &iv)?;
 
   let mut decrypted = hex::decode(ciphertext).map_err(|e| Error::new(Status::GenericFailure, e))?;
   let mut cipher = Ctr128BE::<Aes256>::new(&key, &nonce);
@@ -76,7 +76,7 @@ pub fn cycle(mut num: i32, count: i32, negative: Option<bool>) -> i32 {
 
 /// Extract the key and nonce from the provided secret and IV
 #[inline]
-fn get_key_and_nonce(secret: Buffer, iv: Buffer) -> Result<(Key, Nonce)> {
+fn get_key_and_nonce(secret: &Buffer, iv: &Buffer) -> Result<(Key, Nonce)> {
   if secret.len() != 32 {
     return Err(Error::new(
       Status::InvalidArg,
@@ -91,8 +91,8 @@ fn get_key_and_nonce(secret: Buffer, iv: Buffer) -> Result<(Key, Nonce)> {
     ));
   }
 
-  let key = Key::from_slice(secret.as_ref());
-  let nonce = Nonce::from_slice(iv.as_ref());
+  let key = Key::from_slice(secret);
+  let nonce = Nonce::from_slice(iv);
 
   Ok((*key, *nonce))
 }
