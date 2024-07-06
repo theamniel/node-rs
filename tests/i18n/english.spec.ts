@@ -4,13 +4,14 @@ import path from 'node:path';
 import { I18n } from '../../packages/i18n/lib';
 
 // All cache are shared for all instances (global cache by process)
+const lang = new I18n({
+  directory: path.join(__dirname, 'locales'),
+  locales: ['es-ES', 'en-US'],
+  default: 'en-US',
+  preload: true,
+});
+
 test('english', (t) => {
-  const lang = new I18n({
-    directory: path.join(__dirname, 'locales'),
-    locales: ['es-ES', 'en-US'],
-    default: 'en-US',
-    preload: true,
-  });
 
   // Basic usage
   t.is(lang.t('common:hello'), 'Hello, world!');

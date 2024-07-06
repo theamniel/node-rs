@@ -3,14 +3,14 @@ import path from 'node:path';
 
 import { I18n } from '../../packages/i18n/lib';
 
-test('french', (t) => {
-  const lang = new I18n({
-    directory: path.join(__dirname, 'locales'),
-    locales: ['en-US', 'fr-FR'],
-    default: 'fr-FR',
-    preload: true,
-  });
+const lang = new I18n({
+  directory: path.join(__dirname, 'locales'),
+  locales: ['en-US', 'fr-FR'],
+  default: 'fr-FR',
+  preload: true,
+});
 
+test('french', (t) => {
   // Basic usage
   t.is(lang.t('common:hello'), 'Salut monde!');
 
