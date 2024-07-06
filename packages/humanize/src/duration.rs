@@ -54,8 +54,8 @@ pub fn duration(ms: f64, max_units: Option<i32>, short: Option<bool>) -> String 
 
   let is_short = short.unwrap_or(false);
   let max = max_units.unwrap_or(7).clamp(1, 7) as usize;
-
   let mut units = Vec::with_capacity(max);
+
   generate_parsers(&ms, max, |(value, singular, plural, abbrev)| {
     units.push(if is_short {
       format!("{value:.0}{abbrev}")
@@ -73,9 +73,9 @@ pub fn duration(ms: f64, max_units: Option<i32>, short: Option<bool>) -> String 
       if is_short || max == 1 {
         res.to_string()
       } else {
-        match (i, units.len()) {
-          (idx, len) if len >= 2 && idx == len - 2 => format!("{res} and"),
-          (idx, len) if len > 1 && idx != len - 1 => format!("{res},"),
+        match units.len() {
+          len if len >= 2 && i == len - 2 => format!("{res} and"),
+          len if len > 1 && i != len - 1 => format!("{res},"),
           _ => res.to_string(),
         }
       }

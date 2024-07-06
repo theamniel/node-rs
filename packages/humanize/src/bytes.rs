@@ -17,25 +17,14 @@ const SUFFIX: [&str; 11] = ["B", "KB", "MB", "GB", "TB", "PB", "EB", "ZB", "YB",
  * @returns {string} a string representation of that size in a human-readable format.
  */
 #[napi]
-pub fn bytes(mut bytes: f64) -> String {
-  let mut result = String::new();
-  if bytes < 0.0 {
-    result.push('-');
-    bytes = -bytes;
-  }
-
-  if bytes < UNIT {
-    result.push_str(format!("{bytes} B").as_str());
-    result
-  } else {
-    let base = bytes.log2() as usize / 10;
+pub fn bytes(bytes: f64) -> String {
+  let (value, unit) = {
+    let base = if bytes < 0.0 { -bytes } else { bytes }.log2() as usize / 10;
     let pow_base = UNIT.powi(base as i32);
     let units = ((bytes / pow_base) * 100.0).floor() / 100.0;
 
-    result.push_str(&units.to_string());
-    result.push(' ');
-    result.push_str(SUFFIX[base]);
+    (units, SUFFIX[base])
+  };
 
-    result
-  }
+  format!("{} {}", value, unit)
 }
