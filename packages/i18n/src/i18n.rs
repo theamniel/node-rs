@@ -207,7 +207,7 @@ impl I18n {
     // keys - [] invalid
     // keys is 1 (min: 2) invalid
     // keys[0] is 0 (min: 1 len) invalid
-    let mut keys = key.split(':').collect::<Vec<_>>();
+    let keys = key.split(':').collect::<Vec<_>>();
     if keys.is_empty() || keys.len() < 2 || keys[0].is_empty() {
       return Err(Error::new(Status::InvalidArg, "Invalid key provided"));
     }
@@ -220,23 +220,24 @@ impl I18n {
       ));
     };
 
-    let mut data: Option<&serde_json::Value>;
-    if keys[1].contains('.') {
-      keys = keys[1].split('.').collect::<Vec<_>>();
-      data = translations.get(keys[0]);
-
-      for fragm in keys.iter().skip(1) {
-        if data.is_none() {
-          return Err(Error::new(
-            Status::InvalidArg,
-            format!("Missing value for \"{}\"", keys.join(".")),
-          ));
+    let data = if keys[1].contains('.') {
+      let fragments = keys[1].split('.').collect::<Vec<_>>();
+      let mut data = translations.get(fragments[0]);
+      for fragment in fragments.iter().skip(1) {
+        data = match data {
+          Some(data) => data.get(fragment),
+          None => {
+            return Err(Error::new(
+              Status::InvalidArg,
+              format!("Missing value for \"{}\"", fragments.join(".")),
+            ))
+          }
         }
-        data = data.unwrap().get(fragm);
       }
+      data
     } else {
-      data = translations.get(keys[1]);
-    }
+      translations.get(keys[1])
+    };
 
     if let Some(data) = data.and_then(|d| d.as_str()) {
       if args.is_none() || !BRACKETS_RE.is_match(data) {
@@ -280,9 +281,9 @@ impl I18n {
 
   fn load(&self, load_locale: Option<&str>) -> Result<()> {
     let pattern_path = format!("{}/**/**/*.*", self.directory);
-    for path in glob::glob(&pattern_path).unwrap().filter_map(std::result::Result::ok) {
-      if path.is_file() {
-        let full_path = path.to_string_lossy().replace('\\', "/");
+    for entry in glob::glob(&pattern_path).unwrap().filter_map(std::result::Result::ok) {
+      if entry.is_file() {
+        let full_path = entry.to_string_lossy().replace('\\', "/");
 
         let Some(locale) = LOCALE_RE
           .captures(&full_path)
@@ -296,8 +297,8 @@ impl I18n {
         if let Some(load_locale) = load_locale {
           if locale == load_locale {
             self.load_file(&full_path, true)?;
-            continue;
           }
+          continue;
         }
 
         if self.locales.contains(&locale.to_string()) {

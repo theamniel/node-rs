@@ -21,20 +21,17 @@ const EXTS: [&str; 4] = ["json", "toml", "yaml", "yml"];
 ///
 /// Returns an Error if the file does not exist or is not a file.
 pub fn resolve_path(file: &str) -> Result<PathBuf> {
-  if EXTENSION_RE.is_match(file) {
-    let path = PathBuf::from(file);
+  let mut path = PathBuf::from(file);
+  if path.exists() && path.is_file() {
+    return Ok(path);
+  }
+
+  for ext in EXTS {
+    path.set_extension(ext);
     if path.exists() && path.is_file() {
       return Ok(path);
     }
-  } else {
-    for ext in EXTS {
-      let path = PathBuf::from(format!("{}.{}", file, ext));
-      if path.exists() && path.is_file() {
-        return Ok(path);
-      }
-    }
   }
-
   Err(Error::new(Status::InvalidArg, format!("File not found \"{file}\"")))
 }
 
