@@ -37,7 +37,7 @@ pub fn set_fallback(locale: String) -> Result<()> {
     return i18n.write().unwrap().set_fallback(locale);
   }
 
-  Err(Error::new(Status::GenericFailure, "Not yet initialized  ..."))
+  Err(Error::new(Status::GenericFailure, "Not yet initialized..."))
 }
 
 /// Sets the current locale.
@@ -48,7 +48,7 @@ pub fn set_locale(locale: String) -> Result<()> {
   if let Some(i18n) = I18N.get() {
     return i18n.write().unwrap().set_locale(locale);
   }
-  Err(Error::new(Status::GenericFailure, "Not yet initialized  ..."))
+  Err(Error::new(Status::GenericFailure, "Not yet initialized..."))
 }
 
 /// Checks if translations are available for the given locale.
@@ -60,7 +60,7 @@ pub fn has(locale: String) -> Result<bool> {
   if let Some(i18n) = I18N.get() {
     return i18n.read().unwrap().has(locale);
   }
-  Err(Error::new(Status::GenericFailure, "Not yet initialized  ..."))
+  Err(Error::new(Status::GenericFailure, "Not yet initialized..."))
 }
 
 /// Reloads translations for the given locale and key.
@@ -75,7 +75,7 @@ pub fn reload(locale: Option<String>, key: Option<String>) -> Result<()> {
   if let Some(i18n) = I18N.get() {
     return i18n.read().unwrap().reload(locale, key);
   }
-  Err(Error::new(Status::GenericFailure, "Not yet initialized  ..."))
+  Err(Error::new(Status::GenericFailure, "Not yet initialized..."))
 }
 
 /// translate function
@@ -87,7 +87,7 @@ pub fn t(key: String, args: Option<file::JsonObject>) -> Result<String> {
   if let Some(i18n) = I18N.get() {
     return i18n.read().unwrap().t(key, args);
   }
-  Err(Error::new(Status::GenericFailure, "Not yet initialized  ..."))
+  Err(Error::new(Status::GenericFailure, "Not yet initialized..."))
 }
 
 /// translate function
@@ -100,5 +100,5 @@ pub fn translate(locale: String, key: String, args: Option<file::JsonObject>) ->
   if let Some(i18n) = I18N.get() {
     return i18n.read().unwrap().translate(locale, key, args);
   }
-  Err(Error::new(Status::GenericFailure, "Not yet initialized  ..."))
+  Err(Error::new(Status::GenericFailure, "Not yet initialized..."))
 }

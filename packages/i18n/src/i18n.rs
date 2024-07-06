@@ -240,19 +240,18 @@ impl I18n {
     };
 
     if let Some(data) = data.and_then(|d| d.as_str()) {
-      if args.is_none() || !BRACKETS_RE.is_match(data) {
-        return Ok(data.to_string());
+      if args.is_some() && BRACKETS_RE.is_match(data) {
+        let args = args.unwrap();
+        let result = BRACKETS_RE.replace_all(data, |caps: &regex::Captures| {
+          let key = caps.get(1).unwrap().as_str();
+          args
+            .get(key)
+            .map(|a| a.to_string().replace('"', ""))
+            .unwrap_or("??".to_string())
+        });
+        return Ok(result.to_string());
       }
-
-      let args = args.unwrap();
-      let result = BRACKETS_RE.replace_all(data, |caps: &regex::Captures| {
-        let key = caps.get(1).unwrap().as_str();
-        args
-          .get(key)
-          .map(|a| a.to_string().replace('"', ""))
-          .unwrap_or("??".to_string())
-      });
-      return Ok(result.to_string());
+      return Ok(data.to_string());
     } else if locale != self.fallback {
       return self.translate(self.fallback.clone(), key, args);
     }

@@ -1,5 +1,4 @@
 use dashmap::DashMap;
-use lazy_static::lazy_static;
 use napi::{Error, Result, Status};
 use std::{collections::HashMap, fs, path::PathBuf};
 
@@ -9,9 +8,6 @@ pub type JsonObject = HashMap<String, serde_json::Value>;
 /// A type alias for a translation object represented as a DashMap of String to JsonObject.
 pub type Cache = DashMap<String, JsonObject>;
 
-lazy_static! {
-  static ref EXTENSION_RE: regex::Regex = regex::Regex::new(r"\.(json|toml|ya?ml)$").unwrap();
-}
 /// A type alias for a translation file.
 const EXTS: [&str; 4] = ["json", "toml", "yaml", "yml"];
 
@@ -31,6 +27,7 @@ pub fn resolve_path(file: &str) -> Result<PathBuf> {
     if path.exists() && path.is_file() {
       return Ok(path);
     }
+    path.set_extension(""); // reset to prevent
   }
   Err(Error::new(Status::InvalidArg, format!("File not found \"{file}\"")))
 }
