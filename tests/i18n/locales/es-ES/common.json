@@ -1,8 +1,8 @@
 {
   "hello": "¡Hola, mundo!",
   "user": {
-    "name": "¡Hola, #{name}!",
-    "greeting": "¡Hola, #{name}! Tienes #{age} años y tu cumpleaños es el #{birthday}."
+    "name": "¡Hola, {{name}}!",
+    "greeting": "¡Hola, {{name}}! Tienes {{age}} años y tu cumpleaños es el {{birthday}}."
   },
   "fallback": {
     "to": {

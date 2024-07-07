@@ -2,8 +2,8 @@
 hello: Salut monde!
 
 user:
-  name: "Bonjour, #{name}!"
-  greeting: "Bonjour, #{name}! Vous avez #{age} ans et votre anniversaire est le #{birthday}"
+  name: Bonjour, {{name}}!
+  greeting: Bonjour, {{name}}! Vous avez {{age}} ans et votre anniversaire est le {{birthday}}
 
 fallback:
   to:

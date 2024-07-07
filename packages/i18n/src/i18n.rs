@@ -8,9 +8,9 @@ use std::path;
 
 lazy_static::lazy_static! {
   static ref CACHE: Cache = Cache::new();
-  static ref BRACKETS_RE: regex::Regex = regex::Regex::new(r"#\{([\w\.]+)\}").unwrap();
-  static ref LOCALE_RE: regex::Regex = regex::Regex::new(r"[a-z]{2,2}(\-|\_)[A-Z]{2,2}").unwrap();
-  static ref LOCALE_STRICT_RE: regex::Regex = regex::Regex::new(r"^[a-z]{2,2}(\-|\_)[A-Z]{2,2}$").unwrap();
+  static ref BRACKETS_RE: regex::Regex = regex::Regex::new(r"\{\{([\w\.]+)\}\}").unwrap();
+  static ref LOCALE_RE: regex::Regex = regex::Regex::new(r"[a-z]{2,2}([-_])[A-Z]{2,2}").unwrap();
+  static ref LOCALE_STRICT_RE: regex::Regex = regex::Regex::new(r"^([a-z]{2,2}([-_])[A-Z]{2,2})$").unwrap();
   static ref FILENAME_RE: regex::Regex = regex::Regex::new(r"^(.*?)\.[^.]+$").unwrap();
 }
 

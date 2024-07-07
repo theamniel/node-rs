@@ -7,6 +7,7 @@ edition = "2021"
 crate-type = ["cdylib"]
 
 [dependencies]
+dashmap = "6"
 glob = "0.3"
 napi-derive = "2"
 lazy_static = "1"
@@ -14,10 +15,6 @@ regex = "1"
 serde_json = "1"
 serde_yml = "0.0.10"
 toml = "0.8"
-
-[dependencies.dashmap]
-version = "6"
-features = ["serde"]
 
 [dependencies.napi]
 version = "2"

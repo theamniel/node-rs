@@ -17,11 +17,11 @@ test('global:spanish', (tt) => {
   tt.is(t('common:hello'), '¡Hola, mundo!');
 
   // With argument (replace #{name} to -> name: <val>)
-  tt.is(t('common:user.name'), '¡Hola, #{name}!');
+  tt.is(t('common:user.name'), '¡Hola, {{name}}!');
   tt.is(t('common:user.name', { name: 'Amniel' }), '¡Hola, Amniel!');
 
   // With arguments
-  tt.is(t('common:user.greeting'), '¡Hola, #{name}! Tienes #{age} años y tu cumpleaños es el #{birthday}.');
+  tt.is(t('common:user.greeting'), '¡Hola, {{name}}! Tienes {{age}} años y tu cumpleaños es el {{birthday}}.');
   tt.is(t('common:user.greeting', { name: 'Amniel', age: 21, birthday: '21/05' }), '¡Hola, Amniel! Tienes 21 años y tu cumpleaños es el 21/05.');
 
   // fallback (see locales/en-US/common and locales/es-ES/common)
@@ -37,11 +37,11 @@ test('global:english', (tt) => {
   tt.is(t('common:hello'), 'Hello, world!');
 
   // With argument (replace #{name} to -> name: <val>)
-  tt.is(t('common:user.name'), 'Hello, #{name}!');
+  tt.is(t('common:user.name'), 'Hello, {{name}}!');
   tt.is(t('common:user.name', { name: 'Amniel' }), 'Hello, Amniel!');
 
   // With arguments
-  tt.is(t('common:user.greeting'), 'Hello, #{name}! You are #{age} years old and your birthday is on #{birthday}');
+  tt.is(t('common:user.greeting'), 'Hello, {{name}}! You are {{age}} years old and your birthday is on {{birthday}}');
   tt.is(t('common:user.greeting', { name: 'Amniel', age: 21, birthday: '05/21' }), 'Hello, Amniel! You are 21 years old and your birthday is on 05/21');
 
   // fallback (see locales/en-US/common and locales/es-ES/common)
