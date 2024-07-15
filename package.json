@@ -16,11 +16,11 @@
     "test:debug": "cross-env NAPI_DEBUG=1 ava -s"
   },
   "devDependencies": {
-    "@napi-rs/cli": "^2.18.3",
-    "@types/node": "^20.14.7",
+    "@napi-rs/cli": "^2.18.4",
+    "@types/node": "^20.14.10",
     "ava": "^6.1.3",
     "cross-env": "^7.0.3",
     "jiti": "^1.21.6",
-    "typescript": "^5.5.2"
+    "typescript": "^5.5.3"
   }
 }

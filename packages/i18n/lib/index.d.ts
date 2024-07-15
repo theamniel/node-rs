@@ -81,7 +81,7 @@ export declare function t(key: string, args?: Record<string, string | number | b
  */
 export declare function translate(locale: string, key: string, args?: Record<string, string | number | boolean>): string
 /** Manages languages and store in cache */
-export class I18n {
+export declare class I18n {
   /**
    * @type {string} fallback use if current locale fail
    * @readonly
