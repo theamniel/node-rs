@@ -1,4 +1,4 @@
-extern crate allocator;
+extern crate global_allocator;
 
 use aes::{
   cipher::{generic_array, KeyIvInit, StreamCipher},

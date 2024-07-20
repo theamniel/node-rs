@@ -17,7 +17,7 @@ version = "2"
 default-features = false
 features = ["napi9"]
 
-[dependencies.allocator]
+[dependencies.global_allocator]
 path = "../allocator"
 
 [build-dependencies]

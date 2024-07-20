@@ -1,10 +1,10 @@
 [package]
-name = "allocator"
+name = "global_allocator"
 version = "0.1.0"
 edition = "2021"
 
-[target.'cfg(all(not(target_os = "linux"), not(target_family = "wasm")))'.dependencies]
+[target.'cfg(not(target_os = "linux"))'.dependencies]
 mimalloc = { version = "0.1" }
 
-[target.'cfg(all(target_os = "linux", not(target_family = "wasm")))'.dependencies]
-jemallocator = "0.5"
+[target.'cfg(target_os = "linux")'.dependencies]
+tikv-jemallocator = {version = "0.6", features = ["disable_initial_exec_tls"]}

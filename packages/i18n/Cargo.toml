@@ -25,7 +25,7 @@ features = ["napi9", "serde-json"]
 version = "1"
 features = ["derive"]
 
-[dependencies.allocator]
+[dependencies.global_allocator]
 path = "../allocator"
 
 [build-dependencies]

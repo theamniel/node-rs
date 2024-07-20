@@ -1,8 +1,8 @@
 /// Configures the global allocator based on the target environment.
-#[cfg(all(not(target_os = "linux"), not(target_family = "wasm")))]
+#[cfg(not(target_os = "linux"))]
 #[global_allocator]
 static GLOBAL: mimalloc::MiMalloc = mimalloc::MiMalloc;
 
-#[cfg(all(target_os = "linux", not(target_family = "wasm")))]
+#[cfg(target_os = "linux")]
 #[global_allocator]
-static GLOBAL: jemallocator::Jemalloc = jemallocator::Jemalloc;
+static GLOBAL: tikv_jemallocator::Jemalloc = tikv_jemallocator::Jemalloc;
