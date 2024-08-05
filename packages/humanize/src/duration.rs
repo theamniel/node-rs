@@ -48,8 +48,8 @@ const MAX_MS: f64 = f64::MAX / 1000.0;
  */
 #[napi]
 pub fn duration(ms: f64, max_units: Option<i32>, short: Option<bool>) -> String {
-  if !(1.0..=MAX_MS).contains(&ms) {
-    return "0".to_string();
+  if ms <= 0.0 || ms > MAX_MS {
+    return "0".into();
   }
 
   let is_short = short.unwrap_or(false);
@@ -98,7 +98,11 @@ fn generate_parsers<F: FnMut((f64, &str, &str, &str))>(ms: &f64, max_units: usiz
   UNITS
     .into_iter()
     .filter_map(|(d, m, s, p, a)| {
-      let value = if m == M_YEAR { round(ms / d) } else { round(ms / d) % m };
+      let value = if m == M_YEAR {
+        round(&(ms / d))
+      } else {
+        round(&(ms / d)) % m
+      };
       if value > 0.0 {
         Some((value, s, p, a))
       } else {
@@ -109,7 +113,8 @@ fn generate_parsers<F: FnMut((f64, &str, &str, &str))>(ms: &f64, max_units: usiz
     .for_each(add);
 }
 
+/// Round the given number to the nearest integer.
 #[inline]
-fn round(ms: f64) -> f64 {
+fn round(ms: &f64) -> f64 {
   ms.signum() * ms.abs().floor()
 }

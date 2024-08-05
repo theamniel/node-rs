@@ -11,13 +11,13 @@ use napi::{Error, Result, Status};
 use napi_derive::napi;
 use std::sync::{OnceLock, RwLock};
 
+// TODO: optimize
 // Global methods
 static I18N: OnceLock<RwLock<i18n::I18n>> = OnceLock::new();
 
-/**
- * @param {I18nConfig} options
- * @returns {boolean}
- */
+/// Initializes the i18n instance with the provided configuration.
+/// @param {I18nConfig} options
+/// @returns {boolean}
 #[napi]
 pub fn init(options: config::Config) -> Result<bool> {
   if I18N.get().is_none() {
