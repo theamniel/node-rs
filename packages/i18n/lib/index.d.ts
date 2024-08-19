@@ -32,9 +32,10 @@ export interface I18nConfig {
   preload?: boolean
 }
 /**
+ * Initializes the i18n instance with the provided configuration.
  * @param {I18nConfig} options
  * @returns {boolean}
-*/
+ */
 export declare function init(options: I18nConfig): boolean
 /**
  * Sets the fallback locale for the current instance.

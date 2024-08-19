@@ -1,17 +1,18 @@
 {
   "name": "@amniel/node-rs",
   "private": true,
-  "packageManager": "npm@10.8.1",
+  "packageManager": "yarn@4.4.0",
+  "description": "Node & Rust bindings",
+  "author": "Amniel",
   "workspaces": [
     "packages/*"
   ],
   "scripts": {
-    "artifacts": "npm --workspaces run artifacts",
-    "build": "npm --workspaces run build",
-    "build:target": "npm --workspaces run build -- --target",
-    "build:debug": "npm --workspaces run build:debug",
-    "prepublishOnly": "npm --workspaces run prepublishOnly",
-    "version": "npm run version --workspaces",
+    "artifacts": "yarn workspaces foreach -A run artifacts",
+    "build": "yarn workspaces foreach -A run build",
+    "build:debug": "yarn workspaces foreach -A run build:debug",
+    "prepublishOnly": "yarn workspaces foreach -A run prepublishOnly",
+    "version": "yarn workspaces foreach -A run version",
     "test": "ava -s",
     "test:debug": "cross-env NAPI_DEBUG=1 ava -s"
   },
