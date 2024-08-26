@@ -1,3 +1,4 @@
+use common::path::PathExt;
 use dashmap::DashMap;
 use napi::{Error, Result, Status};
 use std::{collections::HashMap, fs, path::PathBuf};
@@ -47,7 +48,7 @@ pub fn parse(full_path: &str) -> Result<JsonObject> {
     )
   })?;
 
-  parse_content(&content, path.extension().unwrap().to_string_lossy().as_ref())
+  parse_content(&content, path.get_extension())
 }
 
 /// Parses a string content into a TObject based on the file extension.

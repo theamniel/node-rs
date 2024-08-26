@@ -1,0 +1,30 @@
+{
+  "$schema": "https://turborepo.org/schema.json",
+  "globalPassThroughEnv": [
+    "CARGO_HOME",
+    "RUSTUP_HOME"
+  ],
+  "tasks": {
+    "artifacts": {
+      "dependsOn": ["^build"]
+    },
+    "build": {
+      "dependsOn": ["^build"],
+      "outputs": ["lib/**"]
+    },
+    "build:debug": {
+      "dependsOn": ["^build"],
+      "outputs": ["lib/**"]
+    },
+    "prepublishOnly": {
+      "dependsOn": ["^build"],
+      "cache": false
+    },
+    "version": {
+      "cache": false
+    },
+    "//#test:ava": {
+      "cache": false
+    }
+  }
+}

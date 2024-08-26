@@ -2,6 +2,7 @@ use super::{
   config,
   file::{parse, Cache, JsonObject},
 };
+use common::path::PathExt;
 use napi::{Error, Result, Status};
 use napi_derive::napi;
 use std::path;
@@ -94,7 +95,7 @@ impl I18n {
     }
 
     let i18n = I18n {
-      directory: dir.to_string_lossy().replace('\\', "/"),
+      directory: dir.normalize(),
       locale: options.default.unwrap_or(options.locales[0].clone()),
       fallback: options.fallback.unwrap_or(options.locales[0].clone()),
       locales: options.locales,
@@ -240,16 +241,17 @@ impl I18n {
     };
 
     if let Some(data) = data.and_then(|d| d.as_str()) {
-      if args.is_some() && BRACKETS_RE.is_match(data) {
-        let args = args.unwrap();
-        let result = BRACKETS_RE.replace_all(data, |caps: &regex::Captures| {
-          let key = caps.get(1).unwrap().as_str();
-          args
-            .get(key)
-            .map(|a| a.to_string().replace('"', ""))
-            .unwrap_or("??".to_string())
-        });
-        return Ok(result.to_string());
+      if BRACKETS_RE.is_match(data) {
+        if let Some(args) = args {
+          let result = BRACKETS_RE.replace_all(data, |caps: &regex::Captures| {
+            let key = caps.get(1).unwrap().as_str();
+            args
+              .get(key)
+              .map(|a| a.to_string().replace('"', ""))
+              .unwrap_or("??".to_string())
+          });
+          return Ok(result.to_string());
+        }
       }
       return Ok(data.to_string());
     } else if locale != self.fallback {
@@ -282,7 +284,7 @@ impl I18n {
     let pattern_path = format!("{}/**/**/*.*", self.directory);
     for entry in glob::glob(&pattern_path).unwrap().filter_map(std::result::Result::ok) {
       if entry.is_file() {
-        let full_path = entry.to_string_lossy().replace('\\', "/");
+        let full_path = entry.normalize();
 
         let Some(locale) = LOCALE_RE
           .captures(&full_path)

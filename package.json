@@ -8,13 +8,13 @@
     "packages/*"
   ],
   "scripts": {
-    "artifacts": "yarn workspaces foreach -A run artifacts",
-    "build": "yarn workspaces foreach -A run build",
-    "build:debug": "yarn workspaces foreach -A run build:debug",
-    "prepublishOnly": "yarn workspaces foreach -A run prepublishOnly",
-    "version": "yarn workspaces foreach -A run version",
-    "test": "ava -s",
-    "test:debug": "cross-env NAPI_DEBUG=1 ava -s"
+    "artifacts": "turbo run artifacts --",
+    "build": "turbo run build --",
+    "build:debug": "turbo run build:debug --",
+    "prepublishOnly": "turbo run prepublishOnly --",
+    "version": "turbo run version --",
+    "test": "turbo run test:ava --",
+    "test:ava": "ava -s"
   },
   "devDependencies": {
     "@napi-rs/cli": "^2.18.4",
@@ -22,6 +22,7 @@
     "ava": "^6.1.3",
     "cross-env": "^7.0.3",
     "jiti": "^1.21.6",
+    "turbo": "^2.0.14",
     "typescript": "^5.5.3"
   }
 }

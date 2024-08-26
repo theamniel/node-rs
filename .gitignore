@@ -194,3 +194,4 @@ Cargo.lock
 !.yarn/versions
 *.node
 **/lib/bindings.js
+.turbo

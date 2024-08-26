@@ -36,7 +36,6 @@ pub fn set_fallback(locale: String) -> Result<()> {
   if let Some(i18n) = I18N.get() {
     return i18n.write().unwrap().set_fallback(locale);
   }
-
   Err(Error::new(Status::GenericFailure, "Not yet initialized..."))
 }
 

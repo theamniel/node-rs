@@ -7,15 +7,10 @@
   crate-type = ["cdylib"]
 
 [dependencies]
-  napi-derive = "2"
+  global_allocator = { workspace = true }
 
-  [dependencies.napi]
-    version = "2"
-    default-features = false
-    features = ["napi9"]
-
-  [dependencies.global_allocator]
-    path = "../allocator"
+  napi = { workspace = true }
+  napi-derive = { workspace = true }
 
 [build-dependencies]
-  napi-build = "2"
+  napi-build = { workspace = true }
