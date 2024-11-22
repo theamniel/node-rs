@@ -1,5 +1,5 @@
 [package]
-name = "security"
+name = "sqlite3"
 version = "0.1.0"
 edition = "2021"
 
@@ -9,9 +9,7 @@ crate-type = ["cdylib"]
 [dependencies]
 napi_allocator = { workspace = true }
 
-aes = { workspace = true }
-ctr = { workspace = true }
-hex = { workspace = true }
+rusqlite = { workspace = true }
 
 napi = { workspace = true }
 napi-derive = { workspace = true }

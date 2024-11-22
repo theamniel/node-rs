@@ -1,7 +1,7 @@
 #![deny(clippy::all)]
 #![allow(dead_code)]
 
-extern crate global_allocator;
+extern crate napi_allocator;
 
 mod config;
 mod file;
@@ -94,7 +94,9 @@ pub fn t(key: String, args: Option<file::JsonObject>) -> Result<String> {
 /// @param {string} key
 /// @param {Record<string, string | number | boolean>} [args]  
 /// @returns {string} translate
-#[napi(ts_args_type = "locale: string, key: string, args?: Record<string, string | number | boolean>")]
+#[napi(
+  ts_args_type = "locale: string, key: string, args?: Record<string, string | number | boolean>"
+)]
 pub fn translate(locale: String, key: String, args: Option<file::JsonObject>) -> Result<String> {
   if let Some(i18n) = I18N.get() {
     return i18n.read().unwrap().translate(locale, key, args);

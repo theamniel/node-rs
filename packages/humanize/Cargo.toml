@@ -1,16 +1,16 @@
 [package]
-  name = "humanize"
-  version = "0.1.0"
-  edition = "2021"
+name = "humanize"
+version = "0.1.0"
+edition = "2021"
 
 [lib]
-  crate-type = ["cdylib"]
+crate-type = ["cdylib"]
 
 [dependencies]
-  global_allocator = { workspace = true }
+napi_allocator = { workspace = true }
 
-  napi = { workspace = true }
-  napi-derive = { workspace = true }
+napi = { workspace = true }
+napi-derive = { workspace = true }
 
 [build-dependencies]
-  napi-build = { workspace = true }
+napi-build = { workspace = true }

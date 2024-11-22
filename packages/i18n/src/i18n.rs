@@ -2,7 +2,7 @@ use super::{
   config,
   file::{parse, Cache, JsonObject},
 };
-use common::path::PathExt;
+use napi_common::path::PathExt;
 use napi::{Error, Result, Status};
 use napi_derive::napi;
 use std::path;
@@ -197,9 +197,11 @@ impl I18n {
   /// translate function
   /// @param {string} locale
   /// @param {string} key
-  /// @param {Record<string, string | number | boolean>} [args]  
+  /// @param {Record<string, string | number | boolean>} [args]
   /// @returns {string} translate
-  #[napi(ts_args_type = "locale: string, key: string, args?: Record<string, string | number | boolean>")]
+  #[napi(
+    ts_args_type = "locale: string, key: string, args?: Record<string, string | number | boolean>"
+  )]
   pub fn translate(&self, locale: String, key: String, args: Option<JsonObject>) -> Result<String> {
     if !is_locale(&locale) {
       return Err(Error::new(Status::InvalidArg, "Invalid locale provided"));

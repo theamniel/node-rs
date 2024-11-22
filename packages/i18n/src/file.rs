@@ -1,4 +1,4 @@
-use common::path::PathExt;
+use napi_common::path::PathExt;
 use dashmap::DashMap;
 use napi::{Error, Result, Status};
 use std::{collections::HashMap, fs, path::PathBuf};

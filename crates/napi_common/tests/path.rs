@@ -1,4 +1,4 @@
-use common::path::PathExt;
+use napi_common::path::PathExt;
 use std::path::Path;
 
 #[test]
