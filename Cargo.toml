@@ -1,17 +1,18 @@
 [workspace]
   members = [
-    "crates/common",
-    "crates/allocator",
+    "crates/napi_common",
+    "crates/napi_allocator",
 
     "packages/humanize",
     "packages/i18n",
     "packages/security",
+    "packages/sqlite3",
   ]
   resolver = '2'
 
   [workspace.dependencies]
-    common = { path = "crates/common" }
-    global_allocator = { path = "crates/allocator" }
+    napi_common = { path = "crates/napi_common" }
+    napi_allocator = { path = "crates/napi_allocator" }
     # napi
     napi = "2.16.9"
     napi-derive = "2.16.11"
@@ -25,11 +26,12 @@
     lazy_static = "1.5.0"
     mimalloc-rust = "0.2.1"
     regex = "1.10.6"
-    serde = "1.0.208"
+    rusqlite = { version = "0.32.1", features = ["bundled"] }
+    serde = { version = "1.0.208", features = ["derive"] }
     serde_json = "1.0.127"
-    serde_yml = "0.0.11"
-    # some times, need feature "disable_initial_exec_tls"
-    tikv-jemallocator = "0.6.0"
+    serde_yml = "0.0.12"
+    # Sometimes, need feature "disable_initial_exec_tls"
+    tikv-jemallocator = { version = "0.6.0", features = ["disable_initial_exec_tls"] }
     toml = "0.8.19"
 
 [profile.release]

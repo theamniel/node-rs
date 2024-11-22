@@ -7,8 +7,8 @@
   crate-type = ["cdylib"]
 
 [dependencies]
-  common = { workspace = true }
-  global_allocator = { workspace = true }
+  napi_common = { workspace = true }
+  napi_allocator = { workspace = true }
 
   dashmap = { workspace = true }
   glob = { workspace = true }
