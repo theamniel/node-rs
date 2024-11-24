@@ -1,20 +1,20 @@
 [package]
-name = "security"
-version = "0.1.0"
-edition = "2021"
+  name = "security"
+  version = "0.1.0"
+  edition = "2021"
 
 [lib]
-crate-type = ["cdylib"]
+  crate-type = ["cdylib"]
 
 [dependencies]
-napi_allocator = { workspace = true }
+  napi_allocator = { workspace = true }
 
-aes = { workspace = true }
-ctr = { workspace = true }
-hex = { workspace = true }
+  aes = { workspace = true }
+  ctr = { workspace = true }
+  hex = { workspace = true }
 
-napi = { workspace = true }
-napi-derive = { workspace = true }
+  napi = { workspace = true }
+  napi-derive = { workspace = true }
 
 [build-dependencies]
-napi-build = { workspace = true }
+  napi-build = { workspace = true }
