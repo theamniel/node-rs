@@ -2,8 +2,8 @@ use super::{
   config,
   file::{parse, Cache, JsonObject},
 };
-use napi_common::path::PathExt;
 use napi::{Error, Result, Status};
+use napi_common::path::PathExt;
 use napi_derive::napi;
 use std::path;
 
@@ -65,33 +65,18 @@ impl I18n {
       return Err(Error::new(Status::InvalidArg, "Invalid path provided"));
     }
 
-    if let Some(ref fallback) = options.fallback {
-      if !is_locale(fallback) {
-        return Err(Error::new(
-          Status::InvalidArg,
-          format!("Invalid fallback locale \"{}\"", fallback),
-        ));
-      }
-    }
-
-    if let Some(ref default) = options.default {
-      if !is_locale(default) {
-        return Err(Error::new(
-          Status::InvalidArg,
-          format!("Invalid default locale \"{}\"", default),
-        ));
-      }
-    }
-
-    if options.locales.is_empty() {
-      return Err(Error::new(Status::InvalidArg, "Array of locales is empty"));
-    }
-
-    // yep, don't use <Iter>.any
-    for locale in &options.locales {
-      if !is_locale(locale) {
-        return Err(Error::new(Status::InvalidArg, format!("Invalid locale \"{}\"", locale)));
-      }
+    if let Some(invalid_locale) = options
+      .locales
+      .iter()
+      .chain(options.fallback.iter())
+      .chain(options.default.iter())
+      .chain(options.locales.iter())
+      .find(|locale| !is_locale(locale))
+    {
+      return Err(Error::new(
+        Status::InvalidArg,
+        format!("Invalid locale \"{}\"", invalid_locale),
+      ));
     }
 
     let i18n = I18n {
@@ -199,9 +184,7 @@ impl I18n {
   /// @param {string} key
   /// @param {Record<string, string | number | boolean>} [args]
   /// @returns {string} translate
-  #[napi(
-    ts_args_type = "locale: string, key: string, args?: Record<string, string | number | boolean>"
-  )]
+  #[napi(ts_args_type = "locale: string, key: string, args?: Record<string, string | number | boolean>")]
   pub fn translate(&self, locale: String, key: String, args: Option<JsonObject>) -> Result<String> {
     if !is_locale(&locale) {
       return Err(Error::new(Status::InvalidArg, "Invalid locale provided"));
@@ -211,7 +194,7 @@ impl I18n {
     // keys is 1 (min: 2) invalid
     // keys[0] is 0 (min: 1 len) invalid
     let keys = key.split(':').collect::<Vec<_>>();
-    if keys.is_empty() || keys.len() < 2 || keys[0].is_empty() {
+    if keys.len() < 2 || keys[0].is_empty() {
       return Err(Error::new(Status::InvalidArg, "Invalid key provided"));
     }
 
@@ -224,20 +207,13 @@ impl I18n {
     };
 
     let data = if keys[1].contains('.') {
-      let fragments = keys[1].split('.').collect::<Vec<_>>();
-      let mut data = translations.get(fragments[0]);
-      for fragment in fragments.iter().skip(1) {
-        data = match data {
-          Some(data) => data.get(fragment),
-          None => {
-            return Err(Error::new(
-              Status::InvalidArg,
-              format!("Missing value for \"{}\"", fragments.join(".")),
-            ))
-          }
-        }
-      }
-      data
+      let fragments: Vec<_> = keys[1].split('.').collect();
+      let data = translations.get(fragments[0]);
+      fragments
+        .iter()
+        .skip(1)
+        .try_fold(data, |acc, &fragment| acc.map(|data| data.get(fragment)))
+        .flatten()
     } else {
       translations.get(keys[1])
     };

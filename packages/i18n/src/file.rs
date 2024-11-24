@@ -1,6 +1,6 @@
-use napi_common::path::PathExt;
 use dashmap::DashMap;
 use napi::{Error, Result, Status};
+use napi_common::path::PathExt;
 use std::{collections::HashMap, fs, path::PathBuf};
 
 /// A type alias for JSON object represented as a HashMap of String to serde_json::Value.
@@ -18,17 +18,18 @@ const EXTS: [&str; 4] = ["json", "toml", "yaml", "yml"];
 ///
 /// Returns an Error if the file does not exist or is not a file.
 pub fn resolve_path(file: &str) -> Result<PathBuf> {
-  let mut path = PathBuf::from(file);
+  let path = PathBuf::from(file);
+
   if path.exists() && path.is_file() {
     return Ok(path);
   }
 
+  let base_path = path.with_extension("");
   for ext in EXTS {
-    path.set_extension(ext);
-    if path.exists() && path.is_file() {
-      return Ok(path);
+    let path_with_ext = base_path.with_extension(ext);
+    if path_with_ext.exists() && path_with_ext.is_file() {
+      return Ok(path_with_ext);
     }
-    path.set_extension(""); // reset to prevent
   }
   Err(Error::new(Status::InvalidArg, format!("File not found \"{file}\"")))
 }
@@ -41,10 +42,10 @@ pub fn resolve_path(file: &str) -> Result<PathBuf> {
 #[inline]
 pub fn parse(full_path: &str) -> Result<JsonObject> {
   let path = resolve_path(full_path)?;
-  let content = fs::read_to_string(&path).map_err(|_| {
+  let content = fs::read_to_string(&path).map_err(|err| {
     Error::new(
       Status::GenericFailure,
-      format!("Failed to read file \"{}\"", path.display()),
+      format!("Failed to read file \"{}\": {}", path.display(), err),
     )
   })?;
 

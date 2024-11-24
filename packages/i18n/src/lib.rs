@@ -9,23 +9,43 @@ mod i18n;
 
 use napi::{Error, Result, Status};
 use napi_derive::napi;
-use std::sync::{OnceLock, RwLock};
+use once_cell::sync::OnceCell;
+use parking_lot::RwLock;
 
-// TODO: optimize
 // Global methods
-static I18N: OnceLock<RwLock<i18n::I18n>> = OnceLock::new();
+static I18N: OnceCell<RwLock<i18n::I18n>> = OnceCell::new();
 
 /// Initializes the i18n instance with the provided configuration.
 /// @param {I18nConfig} options
 /// @returns {boolean}
 #[napi]
 pub fn init(options: config::Config) -> Result<bool> {
-  if I18N.get().is_none() {
-    let i18n_instance = i18n::I18n::new(options)?;
-    _ = I18N.set(RwLock::new(i18n_instance));
-    return Ok(true);
-  }
-  Ok(false)
+  I18N.get_or_init(|| RwLock::new(i18n::I18n::new(options).unwrap()));
+  Ok(true)
+}
+
+// Helper para operaciones de lectura
+fn with_i18n_read<F, T>(f: F) -> Result<T>
+where
+  F: FnOnce(&i18n::I18n) -> Result<T>,
+{
+  let i18n = I18N
+    .get()
+    .ok_or_else(|| Error::new(Status::GenericFailure, "Not yet initialized..."))?
+    .read();
+  f(&i18n)
+}
+
+// Helper para operaciones de escritura
+fn with_i18n_write<F, T>(f: F) -> Result<T>
+where
+  F: FnOnce(&mut i18n::I18n) -> Result<T>,
+{
+  let mut i18n = I18N
+    .get()
+    .ok_or_else(|| Error::new(Status::GenericFailure, "Not yet initialized..."))?
+    .write();
+  f(&mut i18n)
 }
 
 /// Sets the fallback locale for the current instance.
@@ -33,10 +53,7 @@ pub fn init(options: config::Config) -> Result<bool> {
 /// @returns {undefined}
 #[napi]
 pub fn set_fallback(locale: String) -> Result<()> {
-  if let Some(i18n) = I18N.get() {
-    return i18n.write().unwrap().set_fallback(locale);
-  }
-  Err(Error::new(Status::GenericFailure, "Not yet initialized..."))
+  with_i18n_write(|i18n| i18n.set_fallback(locale))
 }
 
 /// Sets the current locale.
@@ -44,10 +61,7 @@ pub fn set_fallback(locale: String) -> Result<()> {
 /// @returns {undefined}
 #[napi]
 pub fn set_locale(locale: String) -> Result<()> {
-  if let Some(i18n) = I18N.get() {
-    return i18n.write().unwrap().set_locale(locale);
-  }
-  Err(Error::new(Status::GenericFailure, "Not yet initialized..."))
+  with_i18n_write(|i18n| i18n.set_locale(locale))
 }
 
 /// Checks if translations are available for the given locale.
@@ -56,10 +70,7 @@ pub fn set_locale(locale: String) -> Result<()> {
 /// @returns {boolean} has
 #[napi]
 pub fn has(locale: String) -> Result<bool> {
-  if let Some(i18n) = I18N.get() {
-    return i18n.read().unwrap().has(locale);
-  }
-  Err(Error::new(Status::GenericFailure, "Not yet initialized..."))
+  with_i18n_read(|i18n| i18n.has(locale))
 }
 
 /// Reloads translations for the given locale and key.
@@ -71,10 +82,7 @@ pub fn has(locale: String) -> Result<bool> {
 /// @returns {undefined}
 #[napi]
 pub fn reload(locale: Option<String>, key: Option<String>) -> Result<()> {
-  if let Some(i18n) = I18N.get() {
-    return i18n.read().unwrap().reload(locale, key);
-  }
-  Err(Error::new(Status::GenericFailure, "Not yet initialized..."))
+  with_i18n_write(|i18n| i18n.reload(locale, key))
 }
 
 /// translate function
@@ -83,10 +91,7 @@ pub fn reload(locale: Option<String>, key: Option<String>) -> Result<()> {
 /// @returns {string} translate
 #[napi(ts_args_type = "key: string, args?: Record<string, string | number | boolean>")]
 pub fn t(key: String, args: Option<file::JsonObject>) -> Result<String> {
-  if let Some(i18n) = I18N.get() {
-    return i18n.read().unwrap().t(key, args);
-  }
-  Err(Error::new(Status::GenericFailure, "Not yet initialized..."))
+  with_i18n_read(|i18n| i18n.t(key, args))
 }
 
 /// translate function
@@ -94,12 +99,7 @@ pub fn t(key: String, args: Option<file::JsonObject>) -> Result<String> {
 /// @param {string} key
 /// @param {Record<string, string | number | boolean>} [args]  
 /// @returns {string} translate
-#[napi(
-  ts_args_type = "locale: string, key: string, args?: Record<string, string | number | boolean>"
-)]
+#[napi(ts_args_type = "locale: string, key: string, args?: Record<string, string | number | boolean>")]
 pub fn translate(locale: String, key: String, args: Option<file::JsonObject>) -> Result<String> {
-  if let Some(i18n) = I18N.get() {
-    return i18n.read().unwrap().translate(locale, key, args);
-  }
-  Err(Error::new(Status::GenericFailure, "Not yet initialized..."))
+  with_i18n_read(|i18n| i18n.translate(locale, key, args))
 }

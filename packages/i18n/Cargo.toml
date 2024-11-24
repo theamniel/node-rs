@@ -18,6 +18,8 @@
   serde_json = { workspace = true }
   serde_yml = { workspace = true }
   toml = { workspace = true }
+  once_cell = { workspace = true }
+  parking_lot = { workspace = true }
 
   napi = { workspace = true, features = ["serde-json"] }
   napi-derive = { workspace = true }
