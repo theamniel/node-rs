@@ -21,14 +21,14 @@ type Nonce = generic_array::GenericArray<u8, generic_array::typenum::U16>;
  */
 #[napi]
 pub fn encrypt(text: String, secret: Buffer, iv: Buffer) -> Result<String> {
-  let (key, nonce) = get_key_and_nonce(&secret, &iv)?;
-
-  let mut cipher = Ctr128BE::<Aes256>::new(&key, &nonce);
   let mut encrypted = text.into_bytes();
+  let (key, nonce) = get_key_and_nonce(&secret, &iv)?;
+  let mut cipher = Ctr128BE::<Aes256>::new(&key, &nonce);
 
   cipher
     .try_apply_keystream(&mut encrypted)
-    .map_err(|e| Error::new(Status::Unknown, e))?;
+    .map_err(|e| Error::new(Status::Unknown, format!("Error encrypting: {e}")))?;
+
   Ok(hex::encode(encrypted))
 }
 
@@ -42,16 +42,18 @@ pub fn encrypt(text: String, secret: Buffer, iv: Buffer) -> Result<String> {
  */
 #[napi]
 pub fn decrypt(ciphertext: String, secret: Buffer, iv: Buffer) -> Result<String> {
-  let (key, nonce) = get_key_and_nonce(&secret, &iv)?;
+  let mut decrypted = hex::decode(&ciphertext)
+    .map_err(|e| Error::new(Status::GenericFailure, format!("Error decoding hex: {e}")))?;
 
-  let mut decrypted = hex::decode(ciphertext).map_err(|e| Error::new(Status::GenericFailure, e))?;
+  let (key, nonce) = get_key_and_nonce(&secret, &iv)?;
   let mut cipher = Ctr128BE::<Aes256>::new(&key, &nonce);
 
   cipher
     .try_apply_keystream(&mut decrypted)
-    .map_err(|e| Error::new(Status::Unknown, e))?;
+    .map_err(|e| Error::new(Status::Unknown, format!("Error decrypting: {e}")))?;
 
-  String::from_utf8(decrypted).map_err(|e| Error::new(Status::GenericFailure, e))
+  String::from_utf8(decrypted)
+    .map_err(|e| Error::new(Status::GenericFailure, format!("Error converting to string: {e}")))
 }
 
 /**
