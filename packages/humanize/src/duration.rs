@@ -1,7 +1,7 @@
 use napi_derive::napi;
 
 const M_SECOND: f64 = 60.0;
-const M_MINUTE: f64 = M_SECOND;
+const M_MINUTE: f64 = 60.0;
 const M_HOUR: f64 = 24.0;
 const M_DAY: f64 = 30.42;
 const M_WEEK: f64 = 4.0;
@@ -49,68 +49,50 @@ const MAX_MS: f64 = f64::MAX / 1000.0;
 #[napi]
 pub fn duration(ms: f64, max_units: Option<i32>, short: Option<bool>) -> String {
   if ms <= 0.0 || ms > MAX_MS {
-    return "0".into();
+    return "0".to_string();
   }
 
   let is_short = short.unwrap_or(false);
   let max = max_units.unwrap_or(7).clamp(1, 7) as usize;
   let mut units = Vec::with_capacity(max);
 
-  generate_parsers(&ms, max, |(value, singular, plural, abbrev)| {
-    units.push(if is_short {
-      format!("{value:.0}{abbrev}")
-    } else if value > 1.0 {
-      format!("{value:.0} {plural}")
+  for &(divisor, modulus, singular, plural, abbrev) in UNITS.iter().take(max) {
+    let value = if modulus == M_YEAR {
+      round(&(ms / divisor))
     } else {
-      format!("{value:.0} {singular}")
-    });
-  });
+      round(&(ms / divisor)) % modulus
+    };
 
-  units
-    .iter()
-    .enumerate()
-    .map(|(i, res)| {
-      if is_short || max == 1 {
-        res.to_string()
+    if value > 0.0 {
+      units.push(if is_short {
+        format!("{value:.0}{abbrev}")
+      } else if value > 1.0 {
+        format!("{value:.0} {plural}")
       } else {
-        match units.len() {
-          len if len >= 2 && i == len - 2 => format!("{res} and"),
-          len if len > 1 && i != len - 1 => format!("{res},"),
-          _ => res.to_string(),
+        format!("{value:.0} {singular}")
+      });
+    }
+  }
+
+  if is_short || max == 1 {
+    units.join(" ")
+  } else {
+    let len = units.len();
+    match len {
+      0 => String::new(),
+      1 => units[0].clone(),
+      _ => {
+        let mut result = String::with_capacity(units.iter().map(|s| s.len()).sum::<usize>() + len * 2);
+        for (i, unit) in units.iter().enumerate() {
+          if i > 0 {
+            result.push_str(if i == len - 1 { " and " } else { ", " });
+          }
+          result.push_str(unit);
         }
+        result
       }
-    })
-    .collect::<Vec<String>>()
-    .join(" ")
-}
-
-/**
- * Generate parsers for the given duration.
- *
- * # Parameters
- *
- * * `ms`: The duration in milliseconds.
- * * `max_units`: The maximum number of units to display.
- * * `add`: A closure to add the parsed units to a vector.
- */
-#[inline]
-fn generate_parsers<F: FnMut((f64, &str, &str, &str))>(ms: &f64, max_units: usize, add: F) {
-  UNITS
-    .into_iter()
-    .filter_map(|(d, m, s, p, a)| {
-      let value = if m == M_YEAR {
-        round(&(ms / d))
-      } else {
-        round(&(ms / d)) % m
-      };
-      if value > 0.0 {
-        Some((value, s, p, a))
-      } else {
-        None
-      }
-    })
-    .take(max_units)
-    .for_each(add);
+    }
+  }
 }
 
 /// Round the given number to the nearest integer.
