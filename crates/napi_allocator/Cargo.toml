@@ -1,11 +1,11 @@
 [package]
-name = "napi_allocator"
-version = "0.1.0"
-edition = "2021"
-publish = false
+  name = "napi_allocator"
+  version = "0.1.0"
+  edition = "2021"
+  publish = false
 
 [target.'cfg(target_os = "windows")'.dependencies]
-mimalloc-rust = { workspace = true }
+  mimalloc-rust = { workspace = true }
 
 [target.'cfg(all(not(target_env = "msvc"), not(target_os = "windows")))'.dependencies]
-tikv-jemallocator = { workspace = true }
+  tikv-jemallocator = { workspace = true }
