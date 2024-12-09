@@ -242,7 +242,7 @@ impl I18n {
     ))
   }
 
-  /// -- Internal methods --
+  // -- Internal methods --
 
   fn load_file(&self, file_path: &str, is_absolute: bool) -> Result<()> {
     let Some(caps) = FILENAME_RE.captures(file_path) else {

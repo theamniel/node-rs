@@ -11,10 +11,8 @@
 /// ```rust
 /// use common::path;
 ///
-/// fn main() {
-///     // Example usage of a function or type from this module
-///     // let result = path::some_function("example/path");
-///     // assert_eq!(result, "expected_result");
-/// }
+/// // Example usage of a function or type from this module
+/// let result = path::some_function("example/path");
+/// assert_eq!(result, "expected_result");
 /// ```
 pub mod path;
